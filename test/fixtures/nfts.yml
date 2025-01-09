@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  issueId: 1
+  itemId: 1
+  owner: MyString
+  purchasePrice: 1.5
+
+two:
+  issueId: 1
+  itemId: 1
+  owner: MyString
+  purchasePrice: 1.5
