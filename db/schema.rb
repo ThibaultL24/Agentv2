@@ -61,6 +61,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_13_140224) do
     t.index ["item_id"], name: "index_item_crafting_on_item_id"
   end
 
+  create_table "item_craftings", force: :cascade do |t|
+    t.bigint "item_id", null: false
+    t.integer "unit_to_craft"
+    t.integer "flex_craft"
+    t.integer "sponsor_mark_craft"
+    t.integer "nb_lower_badge_to_craft"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_id"], name: "index_item_craftings_on_item_id"
+  end
+
   create_table "item_farming", force: :cascade do |t|
     t.bigint "item_id", null: false
     t.float "efficiency"
@@ -69,6 +80,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_13_140224) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["item_id"], name: "index_item_farming_on_item_id"
+  end
+
+  create_table "item_farmings", force: :cascade do |t|
+    t.bigint "item_id", null: false
+    t.float "efficiency"
+    t.float "ratio"
+    t.integer "in_game_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_id"], name: "index_item_farmings_on_item_id"
   end
 
   create_table "item_recharge", force: :cascade do |t|
@@ -82,6 +103,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_13_140224) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["item_id"], name: "index_item_recharge_on_item_id"
+  end
+
+  create_table "item_recharges", force: :cascade do |t|
+    t.bigint "item_id", null: false
+    t.integer "max_energy_recharge"
+    t.integer "time_to_charge"
+    t.integer "flex_charge"
+    t.integer "sponsor_mark_charge"
+    t.float "unit_charge_cost"
+    t.float "max_charge_cost"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_id"], name: "index_item_recharges_on_item_id"
   end
 
   create_table "items", force: :cascade do |t|
@@ -219,8 +253,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_13_140224) do
   add_foreign_key "currencies", "games"
   add_foreign_key "currency_packs", "currencies"
   add_foreign_key "item_crafting", "items"
+  add_foreign_key "item_craftings", "items"
   add_foreign_key "item_farming", "items"
+  add_foreign_key "item_farmings", "items"
   add_foreign_key "item_recharge", "items"
+  add_foreign_key "item_recharges", "items"
   add_foreign_key "items", "rarities"
   add_foreign_key "items", "types"
   add_foreign_key "matches", "users"

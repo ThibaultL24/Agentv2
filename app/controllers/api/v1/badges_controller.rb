@@ -1,19 +1,19 @@
 class Api::V1::BadgesController < ApplicationController
   def index
-    @badges = current_user.badges
+    @badges = current_user.nfts
     render json: @badges
   end
 
   def show
-    @badge = Badge.find(params[:id])
+    @badge = Nft.find(params[:id])
     render json: {
       badge: @badge,
-      performance: calculate_badge_metrics
+      roi_analysis: calculate_roi_metrics
     }
   end
 
   def create
-    @badge = Badge.new(badge_params)
+    @badge = Nft.new(badge_params)
     if @badge.save
       render json: @badge, status: :created
     else
@@ -22,7 +22,7 @@ class Api::V1::BadgesController < ApplicationController
   end
 
   def update
-    @badge = Badge.find(params[:id])
+    @badge = Nft.find(params[:id])
     if @badge.update(badge_params)
       render json: @badge
     else
@@ -31,29 +31,54 @@ class Api::V1::BadgesController < ApplicationController
   end
 
   def destroy
-    @badge = Badge.find(params[:id])
+    @badge = Nft.find(params[:id])
     @badge.destroy
     head :no_content
   end
 
   private
 
-  def calculate_badge_metrics
-    badge_matches = @badge.badge_useds.includes(:match)
+  def badge_params
+    params.require(:badge).permit(
+      :issueId, :itemId, :owner, :purchasePrice
+    )
+  end
+
+  def calculate_roi_metrics
     {
-      earnings: {
-        total_bft: badge_matches.sum { |bu| bu.match.bft_earned },
-        average_bft_per_match: badge_matches.average('matches.bft_earned'),
-        total_matches: badge_matches.count
-      },
-      multiplier: @badge.multiplier,
-      bft_bonus: @badge.bft_bonus
+      matches_to_roi: calculate_matches_to_roi,
+      daily_matches_possible: calculate_daily_matches_possible,
+      estimated_days_to_roi: calculate_estimated_days_to_roi
     }
   end
 
-  def badge_params
-    params.require(:badge).permit(
-      :nftId, :multiplier, :bft_bonus
-    )
+  def calculate_matches_to_roi
+    item = @badge.item
+    crafting = item.item_crafting
+    recharge = item.item_recharge
+
+    # Coûts initiaux
+    badge_cost = crafting.flex_craft
+    recharge_cost = recharge.unit_charge_cost
+
+    # Efficacité BFT
+    bft_per_recharge = item.efficiency * recharge.max_energy_recharge
+
+    # Calcul selon la formule
+    total_badge_cost = badge_cost + recharge_cost
+    recharges_needed = ((total_badge_cost / bft_per_recharge) - 1)
+    total_recharge_cost = recharges_needed * recharge_cost
+
+    total_cost = total_badge_cost + total_recharge_cost
+    (total_cost / bft_per_recharge).ceil
+  end
+
+  def calculate_daily_matches_possible
+    average_match_duration = 10 # minutes
+    (24 * 60) / average_match_duration
+  end
+
+  def calculate_estimated_days_to_roi
+    (calculate_matches_to_roi.to_f / calculate_daily_matches_possible).ceil
   end
 end

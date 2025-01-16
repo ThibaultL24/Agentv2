@@ -60,4 +60,13 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  gem 'database_cleaner-active_record'
 end
+
+group :development, :test do
+  gem 'rspec-rails', '~> 6.1.0'
+  gem 'factory_bot_rails', '~> 6.4.0'
+  gem 'faker', '~> 3.2.0'
+end
+
+gem 'securerandom', '0.4.1'
