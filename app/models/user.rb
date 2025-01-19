@@ -15,11 +15,9 @@ class User < ApplicationRecord
     JWT.encode(
       {
         id: id,
-        exp: 60.days.from_now.to_i,
-        email: email
+        exp: 60.days.from_now.to_i
       },
-      Rails.application.credentials.devise_jwt_secret_key!,
-      'HS256'
+      Rails.application.credentials.devise_jwt_secret_key!
     )
   end
 end

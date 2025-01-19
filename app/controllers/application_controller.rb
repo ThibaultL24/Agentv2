@@ -1,25 +1,33 @@
 class ApplicationController < ActionController::Base
-  protect_from_forgery with: :null_session
+  protect_from_forgery unless: -> { request.format.json? }
   before_action :authenticate_user!
 
   private
 
   def authenticate_user!
-    if request.headers['Authorization'].present?
-      authenticate_or_request_with_http_token do |token|
-        begin
-          jwt_payload = JWT.decode(token, Rails.application.secrets.secret_key_base).first
-          @current_user_id = jwt_payload['id']
-        rescue JWT::ExpiredSignature, JWT::VerificationError, JWT::DecodeError
-          head :unauthorized
-        end
-      end
-    else
-      head :unauthorized
-    end
+    return if current_user
+
+    head :unauthorized
   end
 
   def current_user
-    @current_user ||= super || User.find(@current_user_id)
+    return @current_user if defined?(@current_user)
+
+    header = request.headers['Authorization']
+    return nil unless header
+
+    token = header.split(' ').last
+    begin
+      decoded = JWT.decode(
+        token,
+        Rails.application.credentials.devise_jwt_secret_key!,
+        true,
+        algorithm: 'HS256'
+      )
+
+      @current_user = User.find(decoded.first['id'])
+    rescue JWT::DecodeError, ActiveRecord::RecordNotFound
+      nil
+    end
   end
 end

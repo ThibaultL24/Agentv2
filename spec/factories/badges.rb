@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :badge, class: 'Nft' do
     sequence(:issueId)
-    owner { association(:user).openLootID }
-    itemId { association(:item).id }
+    sequence(:itemId) { |n| create(:item).id }
     purchasePrice { 100.0 }
+    owner { create(:user).openLootID }
   end
 end

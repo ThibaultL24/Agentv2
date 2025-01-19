@@ -6,6 +6,8 @@ RSpec.describe Api::V1::BadgesController, type: :controller do
   let(:badge) { create(:badge, owner: user.openLootID, itemId: item.id) }
 
   before do
+    # Simulons l'authentification pour les tests de contrôleur
+    allow(controller).to receive(:authenticate_user!).and_return(true)
     allow(controller).to receive(:current_user).and_return(user)
   end
 

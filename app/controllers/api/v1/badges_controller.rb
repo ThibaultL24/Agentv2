@@ -1,4 +1,4 @@
-class Api::V1::BadgesController < ApplicationController
+class Api::V1::BadgesController < Api::V1::BaseController
   def index
     @badges = current_user.nfts
     render json: @badges

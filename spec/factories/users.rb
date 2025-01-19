@@ -1,5 +1,7 @@
 FactoryBot.define do
   factory :user do
+    sequence(:email) { |n| "user#{n}@example.com" }
+    password { 'password123' }
     sequence(:openLootID) { |n| "user_#{n}" }
     isPremium { false }
     level { 1 }
