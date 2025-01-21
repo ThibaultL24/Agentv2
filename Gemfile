@@ -74,3 +74,6 @@ gem 'securerandom', '0.4.1'
 # Pour l'authentification
 gem 'devise'
 gem 'devise-jwt'  # Pour l'authentification API
+
+gem 'mailjet'
+gem 'dotenv-rails'
