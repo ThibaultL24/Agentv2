@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_01_16_151539) do
+ActiveRecord::Schema[8.0].define(version: 2025_01_21_132429) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -174,6 +174,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_151539) do
     t.index ["itemId"], name: "index_nfts_on_itemId"
   end
 
+  create_table "payment_methods", force: :cascade do |t|
+    t.string "name"
+    t.string "provider"
+    t.boolean "is_active", default: true
+    t.jsonb "settings", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider"], name: "index_payment_methods_on_provider", unique: true
+  end
+
   create_table "player_cycles", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.integer "playerCycleType"
@@ -205,6 +215,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_151539) do
     t.datetime "updated_at", null: false
     t.index ["currency_id"], name: "index_slots_on_currency_id"
     t.index ["game_id"], name: "index_slots_on_game_id"
+  end
+
+  create_table "transactions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "payment_method_id", null: false
+    t.decimal "amount", precision: 18, scale: 8
+    t.string "currency"
+    t.string "status"
+    t.string "external_id"
+    t.jsonb "metadata", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_transactions_on_external_id"
+    t.index ["payment_method_id"], name: "index_transactions_on_payment_method_id"
+    t.index ["status"], name: "index_transactions_on_status"
+    t.index ["user_id"], name: "index_transactions_on_user_id"
   end
 
   create_table "types", force: :cascade do |t|
@@ -278,6 +304,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_16_151539) do
   add_foreign_key "player_cycles", "users"
   add_foreign_key "slots", "currencies"
   add_foreign_key "slots", "games"
+  add_foreign_key "transactions", "payment_methods"
+  add_foreign_key "transactions", "users"
   add_foreign_key "user_builds", "users"
   add_foreign_key "user_recharges", "users"
   add_foreign_key "user_slots", "slots"

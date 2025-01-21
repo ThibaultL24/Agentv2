@@ -39,4 +39,21 @@ Rails.application.routes.draw do
       resources :slots
     end
   end
+
+  scope '/payments' do
+    # Routes Stripe
+    scope '/checkout' do
+      post 'create', to: 'checkout#create', as: 'checkout_create'
+      get 'success', to: 'checkout#success', as: 'checkout_success'
+      get 'cancel', to: 'checkout#cancel', as: 'checkout_cancel'
+    end
+
+    # Routes Crypto
+    scope '/crypto' do
+      post 'metamask', to: 'crypto_payments#metamask'
+      post 'coinbase', to: 'crypto_payments#coinbase'
+      post 'binance', to: 'crypto_payments#binance'
+      get 'verify/:tx_hash', to: 'crypto_payments#verify'
+    end
+  end
 end

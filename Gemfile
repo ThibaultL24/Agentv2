@@ -61,6 +61,7 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
   gem 'database_cleaner-active_record'
+  gem 'shoulda-matchers'
 end
 
 group :development, :test do
@@ -77,3 +78,4 @@ gem 'devise-jwt'  # Pour l'authentification API
 
 gem 'mailjet'
 gem 'dotenv-rails'
+gem 'stripe'
