@@ -6,7 +6,6 @@ Agent est une plateforme open source conçue pour optimiser l'expérience des jo
 ## 🛠️ Technologies
 - **Backend**: Ruby on Rails 8.0
 - **Base de données**: PostgreSQL
-- **Frontend**: React avec Hotwire (Turbo & Stimulus)
 - **Authentification**: Devise avec JWT
 - **Paiements**: Stripe
 - **Emails**: Mailjet
