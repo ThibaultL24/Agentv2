@@ -44,35 +44,34 @@ Agent is an open-source platform designed to optimize the experience of Boss Fig
 
 ### 1. Clone the repository
 
-```sh
+sh
 git clone https://github.com/ThibaultL24/Agentv2
-sh
-Copier
-Modifier
 cd agent
+
 2. Install dependencies
+
 sh
-Copier
-Modifier
 bundle install
-3. Set up the database
+
+4. Set up the database
+
 sh
-Copier
-Modifier
 rails db:create
+
 sh
-Copier
-Modifier
 rails db:migrate
+
 🧪 Tests
 Run the RSpec test suite
+
 sh
-Copier
-Modifier
 bundle exec rspec
+
 📊 Database Structure
 Entity Relationship Diagram (ERD)
+
 Database Schema
+
 Users 👤
 id: bigint, primary key
 openLootID: string
@@ -87,6 +86,7 @@ email: string, unique, default: ""
 encrypted_password: string, default: ""
 Timestamps: created_at, updated_at
 Authentication fields: reset_password_token, reset_password_sent_at, remember_created_at
+
 Matches 🎮
 id: bigint, primary key
 user_id: bigint, foreign key
@@ -108,6 +108,7 @@ profit: float
 bonusMultiplier: float
 perksMultiplier: float
 Timestamps: created_at, updated_at
+
 Items 🎁
 id: bigint, primary key
 rarity: string
@@ -120,6 +121,7 @@ floorPrice: float
 type_id: bigint, foreign key
 rarity_id: bigint, foreign key
 Timestamps: created_at, updated_at
+
 Currencies 💰
 id: bigint, primary key
 name: string
@@ -128,10 +130,12 @@ onChain: boolean
 price: float
 game_id: bigint, foreign key
 Timestamps: created_at, updated_at
+
 Games 🎲
 id: bigint, primary key
 name: string
 Timestamps: created_at, updated_at
+
 Transactions 💳
 id: bigint, primary key
 user_id: bigint, foreign key
@@ -142,6 +146,7 @@ status: string
 external_id: string
 metadata: jsonb, default: {}
 Timestamps: created_at, updated_at
+
 Player Cycles 🔄
 id: bigint, primary key
 user_id: bigint, foreign key
@@ -153,7 +158,9 @@ startDate: datetime
 endDate: datetime
 nbDateRepeat: integer
 Timestamps: created_at, updated_at
+
 Relationships
+
 User Relationships
 Has many Matches
 Has many Player Cycles
@@ -161,19 +168,23 @@ Has many Transactions
 Has many User Builds
 Has many User Recharges
 Has many User Slots
+
 Item Relationships
 Belongs to Type
 Belongs to Rarity
 Has many Item Craftings
 Has many Item Farmings
 Has many Item Recharges
+
 Game Relationships
 Has many Currencies
 Has many Slots
+
 Currency Relationships
 Belongs to Game
 Has many Currency Packs
 Has many Slots
+
 Indexes
 badge_useds_on_match_id
 badge_useds_on_nftId
@@ -190,32 +201,36 @@ transactions_on_external_id
 transactions_on_status
 users_on_email
 users_on_reset_password_token
+
 🤝 Contribution
+
 1. Fork the project
+   
 2. Create a branch for your feature
+
 sh
-Copier
-Modifier
 git checkout -b feature/AmazingFeature
-3. Commit your changes
+
+5. Commit your changes
 sh
-Copier
-Modifier
 git commit -m 'Add: AmazingFeature'
-4. Push to the branch
+
+6. Push to the branch
 sh
-Copier
-Modifier
 git push origin feature/AmazingFeature
+
 📝 Testing and Code Quality
+
 Unit and integration testing with RSpec
 Security analysis with Brakeman
 Code styling with RuboCop Rails Omakase
+
 🔧 Development Tools
 Debugging: debug gem
 Testing: RSpec, FactoryBot, Faker
 Security: Brakeman
 Style: RuboCop Rails Omakase
+
 📦 Deployment
 [To be defined]
 
