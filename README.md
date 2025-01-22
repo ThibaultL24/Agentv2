@@ -42,20 +42,26 @@ Agent est une plateforme open source conçue pour optimiser l'expérience des jo
 
 ### Configuration
 
-1. Cloner le repository
+# 1.  Cloner le repository
+
 git clone [(https://github.com/ThibaultL24/Agentv2)]
+
 cd agent
 
-2. Installer les dépendances
+# 4.  Installer les dépendances
+
 bundle install
 
-3. Configurer la base de données
+# 5. Configurer la base de données
+
 rails db:create
+
 rails db:migrate
 
 ## 🧪 Tests
 
-Lancer la suite de tests RSpec
+# Lancer la suite de tests RSpec
+
 bundle exec rspec
 
 
@@ -71,21 +77,21 @@ bundle exec rspec
 
 ## 🤝 Contribution
 
-1. Fork le projet
+# 1. Fork le projet
 
-2. Créer une branche pour votre fonctionnalité
+# 2. Créer une branche pour votre fonctionnalité
 
 git checkout -b feature/AmazingFeature
 
-4. Commit vos changements
+# 3. Commit vos changements
 
 git commit -m 'Add: AmazingFeature'
 
-4. Push vers la branche
+# 4. Push vers la branche
 
 git push origin feature/AmazingFeature
 
-5. Ouvrir une Pull Request
+# 5. Ouvrir une Pull Request
 
 ## 📝 Tests et Qualité du Code
 
