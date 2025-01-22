@@ -40,19 +40,19 @@ Agent est une plateforme open source conçue pour optimiser l'expérience des jo
 - PostgreSQL
 - Node.js & Yarn
 
-### Configuration
+## Configuration
 
-# 1.  Cloner le repository
+### 1.  Cloner le repository
 
 git clone [(https://github.com/ThibaultL24/Agentv2)]
 
 cd agent
 
-# 4.  Installer les dépendances
+### 4.  Installer les dépendances
 
 bundle install
 
-# 5. Configurer la base de données
+### 5. Configurer la base de données
 
 rails db:create
 
@@ -60,7 +60,7 @@ rails db:migrate
 
 ## 🧪 Tests
 
-# Lancer la suite de tests RSpec
+### Lancer la suite de tests RSpec
 
 bundle exec rspec
 
