@@ -234,7 +234,7 @@ git push origin feature/AmazingFeature``
 
 ## 📦 Déploiement
 
-Le déploiement est géré via Kamal avec support Docker.
+[À définir]
 
 ## 📫 Contact
 
