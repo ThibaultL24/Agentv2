@@ -91,7 +91,6 @@ git commit -m 'Add: AmazingFeature'
 
 git push origin feature/AmazingFeature
 
-# 5. Ouvrir une Pull Request
 
 ## 📝 Tests et Qualité du Code
 
