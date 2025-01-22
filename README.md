@@ -77,17 +77,17 @@ bundle exec rspec
 
 ## 🤝 Contribution
 
-# 1. Fork le projet
+### 1. Fork le projet
 
-# 2. Créer une branche pour votre fonctionnalité
+### 2. Créer une branche pour votre fonctionnalité
 
 git checkout -b feature/AmazingFeature
 
-# 3. Commit vos changements
+### 3. Commit vos changements
 
 git commit -m 'Add: AmazingFeature'
 
-# 4. Push vers la branche
+### 4. Push vers la branche
 
 git push origin feature/AmazingFeature
 
