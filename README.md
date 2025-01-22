@@ -1,24 +1,117 @@
-# README
+# Agent - Plateforme d'Optimisation pour Boss Fighters
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## 📝 Description
+Agent est une plateforme open source conçue pour optimiser l'expérience des joueurs de Boss Fighters. Elle fournit des outils d'analyse et de gestion permettant aux joueurs, streamers et investisseurs de prendre des décisions éclairées dans le jeu.
 
-Things you may want to cover:
+## 🛠️ Technologies
+- **Backend**: Ruby on Rails 8.0
+- **Base de données**: PostgreSQL
+- **Frontend**: React avec Hotwire (Turbo & Stimulus)
+- **Authentification**: Devise avec JWT
+- **Paiements**: Stripe
+- **Emails**: Mailjet
 
-* Ruby version
+## ✨ Fonctionnalités Principales
 
-* System dependencies
+### 1. Gestion des Matches
+- Suivi des performances
+- Analyse des récompenses
+- Évaluation de l'utilisation des badges
 
-* Configuration
+### 2. Gestion des Builds
+- Création et optimisation de builds
+- Analyse des performances
+- Suivi des métriques (profit, efficacité)
 
-* Database creation
+### 3. Gestion des Items
+- Catalogue d'items avec métriques
+- Analyse du farming
+- Système de crafting
+- Gestion des recharges
 
-* Database initialization
+### 4. Économie
+- Suivi des devises (Cash, FLEX, $BFT)
+- Gestion des slots
+- Analyse ROI
 
-* How to run the test suite
+## 🚀 Installation
 
-* Services (job queues, cache servers, search engines, etc.)
+### Prérequis
+- Ruby 3.x
+- PostgreSQL
+- Node.js & Yarn
 
-* Deployment instructions
+### Configuration
 
-* ...
+1. Cloner le repository
+git clone [url_du_repo]
+cd agent
+
+2. Installer les dépendances
+bundle install
+
+3. Configurer la base de données
+rails db:create
+rails db:migrate
+
+## 🧪 Tests
+
+Lancer la suite de tests RSpec
+bundle exec rspec
+
+
+## 📊 Structure de la Base de Données
+
+### Tables Principales
+- **Users**: Authentification et profils utilisateurs
+- **Matches**: Historique des parties
+- **Items**: Gestion des items et inventaire
+- **Currencies**: Gestion des différentes devises
+- **Transactions**: Suivi des paiements
+- **PlayerCycles**: Gestion des cycles de jeu
+
+## 🤝 Contribution
+
+1. Fork le projet
+
+2. Créer une branche pour votre fonctionnalité
+git checkout -b feature/AmazingFeature
+
+3. Commit vos changements
+git commit -m 'Add: AmazingFeature'
+
+4. Push vers la branche
+git push origin feature/AmazingFeature
+
+5. Ouvrir une Pull Request
+
+## 📝 Tests et Qualité du Code
+
+- Tests unitaires et d'intégration avec RSpec
+- Analyse de sécurité avec Brakeman
+- Style de code avec RuboCop Rails Omakase
+
+## 🔧 Outils de Développement
+
+- **Debugging**: `debug` gem
+- **Tests**: RSpec, FactoryBot, Faker
+- **Sécurité**: Brakeman
+- **Style**: RuboCop Rails Omakase
+
+## 📦 Déploiement
+
+Le déploiement est géré via Kamal avec support Docker.
+
+## 📫 Contact
+
+[À définir]
+
+## 📄 License
+
+[À définir]
+
+---
+
+<p align="center">
+  Fait avec ❤️ pour la communauté Boss Fighters
+</p>
