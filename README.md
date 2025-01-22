@@ -44,28 +44,28 @@ Agent is an open-source platform designed to optimize the experience of Boss Fig
 
 ### 1. Clone the repository
 
-sh
+``sh
 git clone https://github.com/ThibaultL24/Agentv2
-cd agent
+cd agent``
 
 2. Install dependencies
 
-sh
-bundle install
+``sh
+bundle install``
 
 4. Set up the database
 
 sh
 rails db:create
 
-sh
-rails db:migrate
+``sh
+rails db:migrate``
 
 🧪 Tests
 Run the RSpec test suite
 
-sh
-bundle exec rspec
+``sh
+bundle exec rspec``
 
 # Entity Relationship Diagram (ERD)
 
@@ -201,46 +201,54 @@ bundle exec rspec
 - `users_on_email`
 - `users_on_reset_password_token`
 
-🤝 Contribution
+## 🤝 Contribution
 
 1. Fork the project
-   
-2. Create a branch for your feature
+2. Create a branche for your feature
 
-sh
-git checkout -b feature/AmazingFeature
+``sh
+git checkout -b feature/AmazingFeature``
 
 5. Commit your changes
-sh
-git commit -m 'Add: AmazingFeature'
+``sh
+git commit -m 'Add: AmazingFeature'``
 
 6. Push to the branch
-sh
-git push origin feature/AmazingFeature
+``sh
+git push origin feature/AmazingFeature``
 
-📝 Testing and Code Quality
+5. Ouvrir une Pull Request
 
-Unit and integration testing with RSpec
-Security analysis with Brakeman
-Code styling with RuboCop Rails Omakase
+## 📝 Tests et Qualité du Code
 
-🔧 Development Tools
-Debugging: debug gem
-Testing: RSpec, FactoryBot, Faker
-Security: Brakeman
-Style: RuboCop Rails Omakase
+- Tests unitaires et d'intégration avec RSpec
+- Analyse de sécurité avec Brakeman
+- Style de code avec RuboCop Rails Omakase
 
-📦 Deployment
-[To be defined]
+## 🔧 Outils de Développement
 
-📫 Contact
-[To be defined]
+- **Debugging**: `debug` gem
+- **Tests**: RSpec, FactoryBot, Faker
+- **Sécurité**: Brakeman
+- **Style**: RuboCop Rails Omakase
 
-📄 License
-[To be defined]
+## 📦 Déploiement
 
-<p align="center"> Made with ❤️ for the Boss Fighters community </p> ```
-Tu peux maintenant copier et coller ce fichier Markdown dans ton dépôt GitHub sans problème.
+Le déploiement est géré via Kamal avec support Docker.
+
+## 📫 Contact
+
+[À définir]
+
+## 📄 License
+
+[À définir]
+
+---
+
+<p align="center">
+  Fait avec ❤️ pour la communauté Boss Fighters
+</p>
 
 
 
