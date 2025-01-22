@@ -44,7 +44,7 @@ Agent est une plateforme open source conçue pour optimiser l'expérience des jo
 ### Configuration
 
 1. Cloner le repository
-git clone [url_du_repo]
+git clone [(https://github.com/ThibaultL24/Agentv2)]
 cd agent
 
 2. Installer les dépendances
@@ -75,12 +75,15 @@ bundle exec rspec
 1. Fork le projet
 
 2. Créer une branche pour votre fonctionnalité
+
 git checkout -b feature/AmazingFeature
 
-3. Commit vos changements
+4. Commit vos changements
+
 git commit -m 'Add: AmazingFeature'
 
 4. Push vers la branche
+
 git push origin feature/AmazingFeature
 
 5. Ouvrir une Pull Request
