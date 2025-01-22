@@ -67,140 +67,139 @@ Run the RSpec test suite
 sh
 bundle exec rspec
 
-📊 Database Structure
-Entity Relationship Diagram (ERD)
+# Entity Relationship Diagram (ERD)
 
-Database Schema
+## Database Schema
 
-Users 👤
-id: bigint, primary key
-openLootID: string
-isPremium: boolean
-level: integer
-experience: float
-assetType: string
-asset: string
-slotUnlockedId: integer
-maxRarity: string
-email: string, unique, default: ""
-encrypted_password: string, default: ""
-Timestamps: created_at, updated_at
-Authentication fields: reset_password_token, reset_password_sent_at, remember_created_at
+### Users 👤
+- `id`: bigint, primary key
+- `openLootID`: string
+- `isPremium`: boolean
+- `level`: integer
+- `experience`: float
+- `assetType`: string
+- `asset`: string
+- `slotUnlockedId`: integer
+- `maxRarity`: string
+- `email`: string, unique, default: ""
+- `encrypted_password`: string, default: ""
+- Timestamps: `created_at`, `updated_at`
+- Authentication fields: `reset_password_token`, `reset_password_sent_at`, `remember_created_at`
 
-Matches 🎮
-id: bigint, primary key
-user_id: bigint, foreign key
-build: string
-date: datetime
-map: string
-totalFee: integer
-feeCost: float
-slots: integer
-luckrate: float
-time: integer
-energyUsed: integer
-energyCost: float
-totalToken: integer
-tokenValue: float
-totalPremiumCurrency: integer
-premiumCurrencyValue: float
-profit: float
-bonusMultiplier: float
-perksMultiplier: float
-Timestamps: created_at, updated_at
+### Matches 🎮
+- `id`: bigint, primary key
+- `user_id`: bigint, foreign key
+- `build`: string
+- `date`: datetime
+- `map`: string
+- `totalFee`: integer
+- `feeCost`: float
+- `slots`: integer
+- `luckrate`: float
+- `time`: integer
+- `energyUsed`: integer
+- `energyCost`: float
+- `totalToken`: integer
+- `tokenValue`: float
+- `totalPremiumCurrency`: integer
+- `premiumCurrencyValue`: float
+- `profit`: float
+- `bonusMultiplier`: float
+- `perksMultiplier`: float
+- Timestamps: `created_at`, `updated_at`
 
-Items 🎁
-id: bigint, primary key
-rarity: string
-type: string
-name: string
-efficiency: float
-nfts: integer
-supply: integer
-floorPrice: float
-type_id: bigint, foreign key
-rarity_id: bigint, foreign key
-Timestamps: created_at, updated_at
+### Items 🎁
+- `id`: bigint, primary key
+- `rarity`: string
+- `type`: string
+- `name`: string
+- `efficiency`: float
+- `nfts`: integer
+- `supply`: integer
+- `floorPrice`: float
+- `type_id`: bigint, foreign key
+- `rarity_id`: bigint, foreign key
+- Timestamps: `created_at`, `updated_at`
 
-Currencies 💰
-id: bigint, primary key
-name: string
-gameName: string
-onChain: boolean
-price: float
-game_id: bigint, foreign key
-Timestamps: created_at, updated_at
+### Currencies 💰
+- `id`: bigint, primary key
+- `name`: string
+- `gameName`: string
+- `onChain`: boolean
+- `price`: float
+- `game_id`: bigint, foreign key
+- Timestamps: `created_at`, `updated_at`
 
-Games 🎲
-id: bigint, primary key
-name: string
-Timestamps: created_at, updated_at
+### Games 🎲
+- `id`: bigint, primary key
+- `name`: string
+- Timestamps: `created_at`, `updated_at`
 
-Transactions 💳
-id: bigint, primary key
-user_id: bigint, foreign key
-payment_method_id: bigint, foreign key
-amount: decimal(18,8)
-currency: string
-status: string
-external_id: string
-metadata: jsonb, default: {}
-Timestamps: created_at, updated_at
+### Transactions 💳
+- `id`: bigint, primary key
+- `user_id`: bigint, foreign key
+- `payment_method_id`: bigint, foreign key
+- `amount`: decimal(18,8)
+- `currency`: string
+- `status`: string
+- `external_id`: string
+- `metadata`: jsonb, default: {}
+- Timestamps: `created_at`, `updated_at`
 
-Player Cycles 🔄
-id: bigint, primary key
-user_id: bigint, foreign key
-playerCycleType: integer
-cycleName: string
-nbBadge: integer
-minimumBadgeRarity: string
-startDate: datetime
-endDate: datetime
-nbDateRepeat: integer
-Timestamps: created_at, updated_at
+### Player Cycles 🔄
+- `id`: bigint, primary key
+- `user_id`: bigint, foreign key
+- `playerCycleType`: integer
+- `cycleName`: string
+- `nbBadge`: integer
+- `minimumBadgeRarity`: string
+- `startDate`: datetime
+- `endDate`: datetime
+- `nbDateRepeat`: integer
+- Timestamps: `created_at`, `updated_at`
 
-Relationships
+## Relationships
 
-User Relationships
-Has many Matches
-Has many Player Cycles
-Has many Transactions
-Has many User Builds
-Has many User Recharges
-Has many User Slots
+### User Relationships
+- Has many Matches
+- Has many Player Cycles
+- Has many Transactions
+- Has many User Builds
+- Has many User Recharges
+- Has many User Slots
 
-Item Relationships
-Belongs to Type
-Belongs to Rarity
-Has many Item Craftings
-Has many Item Farmings
-Has many Item Recharges
+### Item Relationships
+- Belongs to Type
+- Belongs to Rarity
+- Has many Item Craftings
+- Has many Item Farmings
+- Has many Item Recharges
 
-Game Relationships
-Has many Currencies
-Has many Slots
+### Game Relationships
+- Has many Currencies
+- Has many Slots
 
-Currency Relationships
-Belongs to Game
-Has many Currency Packs
-Has many Slots
+### Currency Relationships
+- Belongs to Game
+- Has many Currency Packs
+- Has many Slots
 
-Indexes
-badge_useds_on_match_id
-badge_useds_on_nftId
-currencies_on_game_id
-currency_packs_on_currency_id
-items_on_rarity_id
-items_on_type_id
-jwt_denylist_on_jti
-matches_on_user_id
-nfts_on_itemId
-payment_methods_on_provider
-player_cycles_on_user_id
-transactions_on_external_id
-transactions_on_status
-users_on_email
-users_on_reset_password_token
+## Indexes
+- `badge_useds_on_match_id`
+- `badge_useds_on_nftId`
+- `currencies_on_game_id`
+- `currency_packs_on_currency_id`
+- `items_on_rarity_id`
+- `items_on_type_id`
+- `jwt_denylist_on_jti`
+- `matches_on_user_id`
+- `nfts_on_itemId`
+- `payment_methods_on_provider`
+- `player_cycles_on_user_id`
+- `transactions_on_external_id`
+- `transactions_on_status`
+- `users_on_email`
+- `users_on_reset_password_token`
 
 🤝 Contribution
 
