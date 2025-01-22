@@ -105,7 +105,7 @@ git push origin feature/AmazingFeature
 
 ## 📦 Deployment
 
-Deployment is handled via Kamal with Docker support.
+[To be defined]
 
 ## 📫 Contact
 
