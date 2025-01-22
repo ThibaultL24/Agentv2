@@ -1,58 +1,58 @@
-# Agent - Plateforme d'Optimisation pour Boss Fighters
+# Agent - Optimization Platform for Boss Fighters
 
 ## 📝 Description
-Agent est une plateforme open source conçue pour optimiser l'expérience des joueurs de Boss Fighters. Elle fournit des outils d'analyse et de gestion permettant aux joueurs, streamers et investisseurs de prendre des décisions éclairées dans le jeu.
+Agent is an open-source platform designed to optimize the experience of Boss Fighters players. It provides analytical and management tools, enabling players, streamers, and investors to make informed in-game decisions.
 
 ## 🛠️ Technologies
 - **Backend**: Ruby on Rails 8.0
-- **Base de données**: PostgreSQL
-- **Authentification**: Devise avec JWT
-- **Paiements**: Stripe
+- **Database**: PostgreSQL
+- **Authentication**: Devise with JWT
+- **Payments**: Stripe
 - **Emails**: Mailjet
 
-## ✨ Fonctionnalités Principales
+## ✨ Key Features
 
-### 1. Gestion des Matches
-- Suivi des performances
-- Analyse des récompenses
-- Évaluation de l'utilisation des badges
+### 1. Match Management
+- Performance tracking
+- Rewards analysis
+- Badge usage evaluation
 
-### 2. Gestion des Builds
-- Création et optimisation de builds
-- Analyse des performances
-- Suivi des métriques (profit, efficacité)
+### 2. Build Management
+- Build creation and optimization
+- Performance analysis
+- Metric tracking (profit, efficiency)
 
-### 3. Gestion des Items
-- Catalogue d'items avec métriques
-- Analyse du farming
-- Système de crafting
-- Gestion des recharges
+### 3. Item Management
+- Item catalog with metrics
+- Farming analysis
+- Crafting system
+- Recharge management
 
-### 4. Économie
-- Suivi des devises (Cash, FLEX, $BFT)
-- Gestion des slots
-- Analyse ROI
+### 4. Economy
+- Currency tracking (Cash, FLEX, $BFT)
+- Slot management
+- ROI analysis
 
 ## 🚀 Installation
 
-### Prérequis
+### Prerequisites
 - Ruby 3.x
 - PostgreSQL
 - Node.js & Yarn
 
 ## Configuration
 
-### 1.  Cloner le repository
+### 1. Clone the repository
 
 git clone [(https://github.com/ThibaultL24/Agentv2)]
 
 cd agent
 
-### 4.  Installer les dépendances
+### 2. Install dependencies
 
 bundle install
 
-### 5. Configurer la base de données
+### 3. Set up the database
 
 rails db:create
 
@@ -60,65 +60,63 @@ rails db:migrate
 
 ## 🧪 Tests
 
-### Lancer la suite de tests RSpec
+### Run the RSpec test suite
 
 bundle exec rspec
 
+## 📊 Database Structure
 
-## 📊 Structure de la Base de Données
-
-### Tables Principales
-- **Users**: Authentification et profils utilisateurs
-- **Matches**: Historique des parties
-- **Items**: Gestion des items et inventaire
-- **Currencies**: Gestion des différentes devises
-- **Transactions**: Suivi des paiements
-- **PlayerCycles**: Gestion des cycles de jeu
+### Main Tables
+- **Users**: User authentication and profiles
+- **Matches**: Match history
+- **Items**: Item management and inventory
+- **Currencies**: Management of various currencies
+- **Transactions**: Payment tracking
+- **PlayerCycles**: Gameplay cycle management
 
 ## 🤝 Contribution
 
-### 1. Fork le projet
+### 1. Fork the project
 
-### 2. Créer une branche pour votre fonctionnalité
+### 2. Create a branch for your feature
 
 git checkout -b feature/AmazingFeature
 
-### 3. Commit vos changements
+### 3. Commit your changes
 
 git commit -m 'Add: AmazingFeature'
 
-### 4. Push vers la branche
+### 4. Push to the branch
 
 git push origin feature/AmazingFeature
 
+## 📝 Testing and Code Quality
 
-## 📝 Tests et Qualité du Code
+- Unit and integration testing with RSpec
+- Security analysis with Brakeman
+- Code styling with RuboCop Rails Omakase
 
-- Tests unitaires et d'intégration avec RSpec
-- Analyse de sécurité avec Brakeman
-- Style de code avec RuboCop Rails Omakase
-
-## 🔧 Outils de Développement
+## 🔧 Development Tools
 
 - **Debugging**: `debug` gem
-- **Tests**: RSpec, FactoryBot, Faker
-- **Sécurité**: Brakeman
+- **Testing**: RSpec, FactoryBot, Faker
+- **Security**: Brakeman
 - **Style**: RuboCop Rails Omakase
 
-## 📦 Déploiement
+## 📦 Deployment
 
-Le déploiement est géré via Kamal avec support Docker.
+Deployment is handled via Kamal with Docker support.
 
 ## 📫 Contact
 
-[À définir]
+[To be defined]
 
 ## 📄 License
 
-[À définir]
+[To be defined]
 
 ---
 
 <p align="center">
-  Fait avec ❤️ pour la communauté Boss Fighters
+  Made with ❤️ for the Boss Fighters community
 </p>
