@@ -1,6 +1,7 @@
 class Api::V1::SessionsController < Devise::SessionsController
   skip_before_action :authenticate_user!, only: :create
   respond_to :json
+  skip_before_action :verify_authenticity_token
 
   def create
     user = User.find_by(email: sign_in_params[:email])
