@@ -37,6 +37,19 @@ Rails.application.routes.draw do
       resources :nfts
       resources :user_builds
       resources :slots
+
+      resources :rarities, only: [:index, :show]
+      resources :types, only: [:index, :show]
+      resources :games
+      resources :currencies
+      resources :currency_packs
+      resources :user_slots
+      resources :user_recharges
+
+      resources :badge_useds
+
+      get 'profile', to: 'users#profile'
+      patch 'profile', to: 'users#update_profile'
     end
   end
 
