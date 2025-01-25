@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
   def authenticate_user!
     return if current_user
 
-    head :unauthorized
+    render json: { error: 'Unauthorized' }, status: :unauthorized
   end
 
   def current_user
@@ -24,7 +24,6 @@ class ApplicationController < ActionController::Base
         true,
         algorithm: 'HS256'
       )
-
       @current_user = User.find(decoded.first['id'])
     rescue JWT::DecodeError, ActiveRecord::RecordNotFound
       nil

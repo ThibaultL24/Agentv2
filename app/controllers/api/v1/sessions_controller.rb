@@ -6,9 +6,11 @@ class Api::V1::SessionsController < Devise::SessionsController
   def create
     user = User.find_by(email: sign_in_params[:email])
     if user&.valid_password?(sign_in_params[:password])
+      token = user.generate_jwt
+      response.headers['Authorization'] = "Bearer #{token}"
       render json: {
-        token: user.generate_jwt,
-        user: user
+        user: user,
+        message: 'Logged in successfully'
       }, status: :ok
     else
       render json: { error: 'Invalid credentials' }, status: :unauthorized
