@@ -79,3 +79,6 @@ gem 'devise-jwt'  # Pour l'authentification API
 gem 'mailjet'
 gem 'dotenv-rails'
 gem 'stripe'
+
+# Pour gérer CORS
+gem 'rack-cors'
