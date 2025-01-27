@@ -3,8 +3,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
 
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable,
-         :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
+         :recoverable, :rememberable, :validatable
   # Associations
   has_many :nfts, foreign_key: :owner, primary_key: :openLootID
   has_many :matches
@@ -31,10 +30,9 @@ class User < ApplicationRecord
 
   def jwt_payload
     {
-      'sub' => id,
+      'id' => id,
       'email' => email,
-      'username' => username,
-      'openLootID' => openLootID
+      'username' => username
     }
   end
 

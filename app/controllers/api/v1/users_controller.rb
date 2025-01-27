@@ -63,7 +63,7 @@ class Api::V1::UsersController < ApplicationController
 
   def user_params
     params.require(:user).permit(
-      :openLootID, :username, :isPremium, :level, :experience,
+      :username, :isPremium, :level, :experience,
       :assetType, :asset, :slotUnlockedId, :maxRarity
     )
   end

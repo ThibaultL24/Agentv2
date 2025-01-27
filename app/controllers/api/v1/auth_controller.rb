@@ -10,8 +10,7 @@ class Api::V1::AuthController < ApplicationController
         token: token,
         user: {
           id: user.id,
-          email: user.email,
-          openLootID: user.openLootID
+          email: user.email
         }
       }
     else
