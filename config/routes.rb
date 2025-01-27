@@ -65,8 +65,6 @@ Rails.application.routes.draw do
     # Routes Crypto
     scope '/crypto' do
       post 'metamask', to: 'crypto_payments#metamask'
-      post 'coinbase', to: 'crypto_payments#coinbase'
-      post 'binance', to: 'crypto_payments#binance'
       get 'verify/:tx_hash', to: 'crypto_payments#verify', constraints: { tx_hash: /0x[a-fA-F0-9]{64}/ }
     end
   end

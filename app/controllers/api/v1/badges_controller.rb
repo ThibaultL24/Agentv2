@@ -40,7 +40,7 @@ class Api::V1::BadgesController < Api::V1::BaseController
 
   def badge_params
     params.require(:badge).permit(
-      :issueId, :itemId, :owner, :purchasePrice
+      :issueId, :itemId, :owner, :purchasePrice  # Uniquement les champs de la table nfts
     )
   end
 
