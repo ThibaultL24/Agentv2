@@ -32,14 +32,6 @@ class CryptoPaymentsController < ApplicationController
     end
   end
 
-  def coinbase
-    # Logique pour gérer les paiements via Coinbase
-  end
-
-  def binance
-    # Logique pour gérer les paiements via Binance
-  end
-
   def verify
     begin
       tx_hash = params[:tx_hash]

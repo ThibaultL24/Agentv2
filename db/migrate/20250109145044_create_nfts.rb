@@ -9,7 +9,6 @@ class CreateNfts < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    # Ajout de la clé étrangère avec items
     add_foreign_key :nfts, :items, column: :itemId
   end
 end

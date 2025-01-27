@@ -50,17 +50,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_21_132429) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "item_crafting", force: :cascade do |t|
-    t.bigint "item_id", null: false
-    t.integer "unitToCraft"
-    t.integer "flexCraft"
-    t.integer "sponsorMarkCraft"
-    t.integer "nbLowerBadgeToCraft"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["item_id"], name: "index_item_crafting_on_item_id"
-  end
-
   create_table "item_craftings", force: :cascade do |t|
     t.bigint "item_id", null: false
     t.integer "unit_to_craft"
@@ -72,16 +61,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_21_132429) do
     t.index ["item_id"], name: "index_item_craftings_on_item_id"
   end
 
-  create_table "item_farming", force: :cascade do |t|
-    t.bigint "item_id", null: false
-    t.float "efficiency"
-    t.float "ratio"
-    t.integer "inGameTime"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["item_id"], name: "index_item_farming_on_item_id"
-  end
-
   create_table "item_farmings", force: :cascade do |t|
     t.bigint "item_id", null: false
     t.float "efficiency"
@@ -90,19 +69,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_21_132429) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["item_id"], name: "index_item_farmings_on_item_id"
-  end
-
-  create_table "item_recharge", force: :cascade do |t|
-    t.bigint "item_id", null: false
-    t.integer "maxEnergyRecharge"
-    t.integer "timeToCHarge"
-    t.integer "flexCharge"
-    t.integer "sponsorMarkCharge"
-    t.float "unitChargeCost"
-    t.float "maxChargeCost"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["item_id"], name: "index_item_recharge_on_item_id"
   end
 
   create_table "item_recharges", force: :cascade do |t|
@@ -294,11 +260,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_21_132429) do
   add_foreign_key "badge_useds", "nfts", column: "nftId"
   add_foreign_key "currencies", "games"
   add_foreign_key "currency_packs", "currencies"
-  add_foreign_key "item_crafting", "items"
   add_foreign_key "item_craftings", "items"
-  add_foreign_key "item_farming", "items"
   add_foreign_key "item_farmings", "items"
-  add_foreign_key "item_recharge", "items"
   add_foreign_key "item_recharges", "items"
   add_foreign_key "items", "rarities"
   add_foreign_key "items", "types"

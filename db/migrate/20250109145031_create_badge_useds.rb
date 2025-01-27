@@ -7,7 +7,6 @@ class CreateBadgeUseds < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    # Ajout de la clé étrangère avec nfts
     add_foreign_key :badge_useds, :nfts, column: :nftId
   end
 end

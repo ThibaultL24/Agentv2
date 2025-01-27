@@ -10,16 +10,5 @@ class Web3Service
         raise "Réseau non supporté"
       end
     end
-
-    private
-
-    def verify_eth_transaction(tx_hash)
-      # Implémenter la vérification Ethereum
-      # Utiliser eth.getTransactionReceipt(tx_hash)
-    end
-
-    def verify_bsc_transaction(tx_hash)
-      # Implémenter la vérification BSC
-    end
   end
 end
