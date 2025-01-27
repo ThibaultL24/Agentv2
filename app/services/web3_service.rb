@@ -10,5 +10,19 @@ class Web3Service
         raise "Réseau non supporté"
       end
     end
+
+    private
+
+    def verify_eth_transaction(tx_hash)
+      # TODO: Implémenter la vérification réelle avec Web3
+      # Pour le test, on simule une confirmation
+      return "confirmed"
+    end
+
+    def verify_bsc_transaction(tx_hash)
+      # TODO: Implémenter la vérification réelle avec Web3
+      # Pour le test, on simule une confirmation
+      return "confirmed"
+    end
   end
 end

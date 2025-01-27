@@ -44,8 +44,8 @@ class Api::V1::UsersController < ApplicationController
     {
       total_matches: matches.count,
       total_profit: matches.sum(:profit),
-      total_bft: matches.sum(:bft_earned),
-      total_flex: matches.sum(:flex_earned),
+      total_energy: matches.sum(:energyUsed),
+      total_token: matches.sum(:totalToken),
       level_stats: {
         current_level: @user.level,
         experience: @user.experience
@@ -56,7 +56,7 @@ class Api::V1::UsersController < ApplicationController
   def get_user_assets
     {
       builds: @user.user_builds.count,
-      badges: @user.badges.count,
+      badges: @user.nfts.count,
       slots: @user.user_slots.count
     }
   end

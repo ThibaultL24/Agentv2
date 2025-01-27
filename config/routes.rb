@@ -27,6 +27,7 @@ Rails.application.routes.draw do
         },
         defaults: { format: :json }
 
+      resources :users, only: [:show, :update]
       resources :badges
       resources :items
       resources :item_farming
@@ -66,7 +67,7 @@ Rails.application.routes.draw do
       post 'metamask', to: 'crypto_payments#metamask'
       post 'coinbase', to: 'crypto_payments#coinbase'
       post 'binance', to: 'crypto_payments#binance'
-      get 'verify/:tx_hash', to: 'crypto_payments#verify'
+      get 'verify/:tx_hash', to: 'crypto_payments#verify', constraints: { tx_hash: /0x[a-fA-F0-9]{64}/ }
     end
   end
 end
