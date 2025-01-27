@@ -25,7 +25,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_21_132429) do
 
   create_table "currencies", force: :cascade do |t|
     t.string "name"
-    t.string "gameName"
     t.boolean "onChain"
     t.float "price"
     t.bigint "game_id", null: false
@@ -235,7 +234,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_01_21_132429) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "openLootID"
     t.boolean "isPremium"
     t.integer "level"
     t.float "experience"
