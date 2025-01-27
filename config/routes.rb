@@ -39,6 +39,13 @@ Rails.application.routes.draw do
       resources :user_builds
       resources :slots
 
+      resources :showrunner_contracts do
+        member do
+          post 'accept'
+          post 'complete'
+        end
+      end
+
       resources :rarities, only: [:index, :show]
       resources :types, only: [:index, :show]
       resources :games

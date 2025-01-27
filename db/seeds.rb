@@ -8,7 +8,8 @@ seed_files = [
   'types.rb',     # Définition des types d'items
   'badges.rb',    # Définition des badges (items spéciaux)
   'users.rb',     # Création des utilisateurs
-  'nfts.rb'       # Création des instances de badges (NFTs)
+  'nfts.rb',      # Création des instances de badges (NFTs)
+  'showrunner_contracts.rb'  # Ajout des contrats de showrunner
 ]
 
 seed_files.each do |file|

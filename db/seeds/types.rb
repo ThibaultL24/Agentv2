@@ -7,7 +7,8 @@ types = [
   { name: "Material" },
   { name: "Pet" },
   { name: "Mount" },
-  { name: "Cosmetic" }
+  { name: "Cosmetic" },
+  { name: "Showrunner" }
 ]
 
 types.each do |type|

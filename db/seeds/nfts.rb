@@ -1,8 +1,9 @@
 # Création d'instances de badges (NFTs) pour chaque utilisateur
 User.find_each do |user|
   # Sélectionner des badges disponibles pour l'utilisateur en fonction de sa rareté maximale
-  available_badges = Item.joins(:rarity)
+  available_badges = Item.joins(:rarity, :type)
                         .where("rarities.name <= ?", user.maxRarity)
+                        .where.not(types: { name: 'Showrunner' }) # Exclure les contrats
                         .order("RANDOM()")
                         .limit(3)
 
