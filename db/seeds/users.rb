@@ -29,3 +29,4 @@ users.each do |user_data|
     user.maxRarity = user_data[:maxRarity]
   end
 end
+

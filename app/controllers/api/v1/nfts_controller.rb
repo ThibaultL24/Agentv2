@@ -6,10 +6,18 @@ class Api::V1::NftsController < ApplicationController
 
   def show
     @nft = Nft.find(params[:id])
+    calculator = MetricsCalculator.new(@nft.item)
+
+    matches = @nft.badge_useds.includes(:match)
     render json: {
       nft: @nft,
       item_details: @nft.item,
-      metrics: calculate_nft_metrics
+      usage_metrics: {
+        total_matches: matches.count,
+        total_profit: matches.sum { |bu| bu.match.profit },
+        total_bft_earned: matches.sum { |bu| bu.match.bft_earned }
+      },
+      item_metrics: @nft.item.type.name == 'Badge' ? calculator.calculate_badge_metrics : calculator.calculate_contract_metrics
     }
   end
 
@@ -38,18 +46,6 @@ class Api::V1::NftsController < ApplicationController
   end
 
   private
-
-  def calculate_nft_metrics
-    matches = @nft.badge_useds.includes(:match)
-    {
-      usage: {
-        total_matches: matches.count,
-        total_profit: matches.sum { |bu| bu.match.profit },
-        total_bft_earned: matches.sum { |bu| bu.match.bft_earned }
-      },
-      item_stats: @nft.item.attributes.slice('efficiency', 'supply', 'floorPrice')
-    }
-  end
 
   def nft_params
     params.require(:nft).permit(

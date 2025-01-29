@@ -8,6 +8,9 @@ class Item < ApplicationRecord
   has_one :item_recharge
   has_many :nfts, foreign_key: :itemId
 
+  # Scope pour inclure les associations par défaut
+  default_scope { includes(:rarity, :type) }
+
   # Méthodes spécifiques pour les contrats de showrunner
   def showrunner?
     type.name == 'Showrunner'
@@ -40,6 +43,45 @@ class Item < ApplicationRecord
       required_win_rate: contract_requirements[:min_win_rate],
       completion_percentage: calculate_completion_percentage(total_matches, win_rate)
     }
+  end
+
+  # Métriques de base
+  def max_energy
+    item_recharge&.max_energy_recharge
+  end
+
+  def time_to_charge
+    item_recharge&.time_to_charge
+  end
+
+  def ratio
+    item_farming&.ratio || 1.0
+  end
+
+  # Métriques calculées pour les badges
+  def sbft_per_minute
+    (efficiency * ratio).round(2)
+  end
+
+  def sbft_per_charge
+    (sbft_per_minute * max_energy).round(2)
+  end
+
+  def sbft_value_per_charge
+    (sbft_per_charge * floorPrice).round(2)
+  end
+
+  # Métriques calculées pour les showrunner contracts
+  def required_matches
+    item_farming&.in_game_time
+  end
+
+  def required_win_rate
+    efficiency
+  end
+
+  def reward_amount
+    floorPrice
   end
 
   private

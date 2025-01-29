@@ -1,4 +1,4 @@
-showrunner_type = Type.find_by(name: 'Showrunner')
+showrunner_type = Type.find_by!(name: 'Showrunner')
 rarities = Rarity.all
 
 contracts = [
@@ -52,11 +52,13 @@ contracts = [
   }
 ]
 
+puts "\nCréation des contrats de showrunner..."
 contracts.each do |contract_data|
-  rarity = Rarity.find_by(name: contract_data[:rarity_name])
+  rarity = Rarity.find_by!(name: contract_data[:rarity_name])
+  puts "- Création du contrat #{contract_data[:name]} (#{contract_data[:rarity_name]})"
 
   # Création du contrat (item de type Showrunner)
-  contract = Item.find_or_create_by(name: contract_data[:name]) do |c|
+  contract = Item.find_or_create_by!(name: contract_data[:name]) do |c|
     c.type = showrunner_type
     c.rarity = rarity
     c.efficiency = contract_data[:efficiency]
@@ -65,10 +67,11 @@ contracts.each do |contract_data|
   end
 
   # Création des données de farming
-  ItemFarming.find_or_create_by(item: contract) do |farming|
+  ItemFarming.find_or_create_by!(item: contract) do |farming|
     farming_data = contract_data[:farming]
     farming.in_game_time = farming_data[:in_game_time]
     farming.efficiency = farming_data[:efficiency]
     farming.ratio = farming_data[:ratio]
   end
 end
+puts "✓ Contrats de showrunner créés avec succès"

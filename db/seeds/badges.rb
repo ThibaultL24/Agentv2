@@ -1,124 +1,63 @@
-# Définition des badges (qui sont des items spéciaux)
+# Définition des badges avec les métriques essentielles
 badges = [
   {
-    name: "Sword Master",
-    rarity_name: "Legendary",
-    type_name: "Weapon",
-    efficiency: 95.5,
-    supply: 100,
-    floorPrice: 1000.0,
-    farming: {
-      efficiency: 95.5,
-      ratio: 2.0,
-      in_game_time: 600 # 10 minutes
-    },
-    crafting: {
-      unit_to_craft: 1,
-      flex_craft: 800.0,      # 80% du floorPrice
-      sponsor_mark_craft: 100.0, # 10% du floorPrice
-      nb_lower_badge_to_craft: 2
-    },
-    recharge: {
-      max_energy_recharge: 100,
-      time_to_charge: 3600,    # 1 heure
-      flex_charge: 50.0,       # 5% du floorPrice
-      sponsor_mark_charge: 10.0, # 1% du floorPrice
-      unit_charge_cost: 20.0,   # 2% du floorPrice
-      max_charge_cost: 100.0    # 10% du floorPrice
-    }
+    name: "Rookie",
+    rarity_name: "Common",
+    type_name: "Badge",
+    efficiency: 0.1,
+    ratio: 1,
+    supply: 200_000,
+    floorPrice: 7.50,
+    max_energy: 1,
+    time_to_charge: "8h00",
+    sbft_per_minute: 15,
+    sbft_per_charge: 800,
+    sbft_value_per_charge: 9.00
   },
   {
-    name: "Dragon Knight",
-    rarity_name: "Epic",
-    type_name: "Armor",
-    efficiency: 85.0,
-    supply: 200,
-    floorPrice: 750.0,
-    farming: {
-      efficiency: 85.0,
-      ratio: 1.8,
-      in_game_time: 600
-    },
-    crafting: {
-      unit_to_craft: 1,
-      flex_craft: 600.0,
-      sponsor_mark_craft: 75.0,
-      nb_lower_badge_to_craft: 2
-    },
-    recharge: {
-      max_energy_recharge: 90,
-      time_to_charge: 3600,
-      flex_charge: 37.5,
-      sponsor_mark_charge: 7.5,
-      unit_charge_cost: 15.0,
-      max_charge_cost: 75.0
-    }
-  },
-  {
-    name: "Fortune Seeker",
-    rarity_name: "Rare",
-    type_name: "Accessory",
-    efficiency: 75.0,
-    supply: 500,
-    floorPrice: 500.0,
-    farming: {
-      efficiency: 75.0,
-      ratio: 1.6,
-      in_game_time: 600
-    },
-    crafting: {
-      unit_to_craft: 1,
-      flex_craft: 400.0,
-      sponsor_mark_craft: 50.0,
-      nb_lower_badge_to_craft: 2
-    },
-    recharge: {
-      max_energy_recharge: 80,
-      time_to_charge: 3600,
-      flex_charge: 25.0,
-      sponsor_mark_charge: 5.0,
-      unit_charge_cost: 10.0,
-      max_charge_cost: 50.0
-    }
-  },
-  {
-    name: "Resource Gatherer",
+    name: "Initiate",
     rarity_name: "Uncommon",
-    type_name: "Tool",
-    efficiency: 65.0,
-    supply: 1000,
-    floorPrice: 250.0,
-    farming: {
-      efficiency: 65.0,
-      ratio: 1.4,
-      in_game_time: 600
-    },
-    crafting: {
-      unit_to_craft: 1,
-      flex_craft: 200.0,
-      sponsor_mark_craft: 25.0,
-      nb_lower_badge_to_craft: 1
-    },
-    recharge: {
-      max_energy_recharge: 70,
-      time_to_charge: 3600,
-      flex_charge: 12.5,
-      sponsor_mark_charge: 2.5,
-      unit_charge_cost: 5.0,
-      max_charge_cost: 25.0
-    }
+    type_name: "Badge",
+    efficiency: 0.205,
+    ratio: 2.05,
+    supply: 100_000,
+    floorPrice: 28.50,
+    max_energy: 2,
+    time_to_charge: "7h45",
+    sbft_per_minute: 50,
+    sbft_per_charge: 6_000,
+    sbft_value_per_charge: 490.00
+  },
+  {
+    name: "Contender",
+    rarity_name: "Epic",
+    type_name: "Badge",
+    efficiency: 1.292,
+    ratio: 8.72,
+    supply: 25_000,
+    floorPrice: 410.00,
+    max_energy: 4,
+    time_to_charge: "7h15",
+    sbft_per_minute: 350,
+    sbft_per_charge: 84_000,
+    sbft_value_per_charge: 8445.00
   }
 ]
 
 # Création des badges
 badges.each do |badge_data|
-  # Création de l'item (badge)
   badge = Item.find_or_create_by(name: badge_data[:name]) do |b|
     b.rarity = Rarity.find_by!(name: badge_data[:rarity_name])
     b.type = Type.find_by!(name: badge_data[:type_name])
     b.efficiency = badge_data[:efficiency]
     b.supply = badge_data[:supply]
     b.floorPrice = badge_data[:floorPrice]
+    b.max_energy = badge_data[:max_energy]
+    b.time_to_charge = badge_data[:time_to_charge]
+    b.sbft_per_minute = badge_data[:sbft_per_minute]
+    b.sbft_per_charge = badge_data[:sbft_per_charge]
+    b.sbft_value_per_charge = badge_data[:sbft_value_per_charge]
+    b.ratio = badge_data[:ratio]
   end
 
   # Création des données de farming

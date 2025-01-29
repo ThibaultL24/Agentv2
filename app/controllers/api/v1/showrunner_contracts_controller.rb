@@ -4,18 +4,27 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
       Item.joins(:type, :rarity)
           .where(types: { name: 'Showrunner' })
           .where('rarities.name <= ?', current_user.maxRarity)
+          .includes(:item_farming, :rarity, :type)
+          .order('rarities.name ASC')
     else
       current_user.nfts
-                 .joins(item: :type)
+                 .joins(item: [:type, :rarity])
+                 .includes(item: [:item_farming, :rarity, :type])
                  .where(types: { name: 'Showrunner' })
+                 .order('rarities.name ASC')
     end
 
-    render json: @contracts
+    render json: @contracts, include: [
+      :rarity,
+      :type,
+      :item_farming
+    ]
   end
 
   def show
     @contract = Item.joins(:type)
                    .where(types: { name: 'Showrunner' })
+                   .includes(:item_farming, :rarity, :type)
                    .find(params[:id])
 
     render json: {
@@ -23,12 +32,19 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
       requirements: @contract.contract_requirements,
       progress: @contract.calculate_contract_progress(current_user)
     }
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Contract not found' }, status: :not_found
   end
 
   def accept
     @contract = Item.joins(:type)
                    .where(types: { name: 'Showrunner' })
                    .find(params[:id])
+
+    # Vérifier si l'utilisateur a déjà accepté ce contrat
+    if current_user.nfts.exists?(itemId: @contract.id, status: ['in_progress', 'completed'])
+      return render json: { error: 'Contract already accepted or completed' }, status: :unprocessable_entity
+    end
 
     nft = Nft.new(
       itemId: @contract.id,
@@ -43,8 +59,10 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
         contract: nft
       }
     else
-      render json: { error: 'Cannot accept this contract' }, status: :unprocessable_entity
+      render json: { error: 'Cannot accept this contract', details: nft.errors.full_messages }, status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Contract not found' }, status: :not_found
   end
 
   def complete
@@ -52,6 +70,8 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
                       .joins(item: :type)
                       .where(types: { name: 'Showrunner' })
                       .find(params[:id])
+
+    return render json: { error: 'Contract is not in progress' }, status: :unprocessable_entity unless @nft.status == 'in_progress'
 
     @contract = @nft.item
     progress = @contract.calculate_contract_progress(current_user)
@@ -65,8 +85,13 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
         rewards: calculate_rewards(@contract)
       }
     else
-      render json: { error: 'Contract requirements not met' }, status: :unprocessable_entity
+      render json: {
+        error: 'Contract requirements not met',
+        current_progress: progress
+      }, status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Contract not found' }, status: :not_found
   end
 
   private
@@ -90,7 +115,8 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
 
   def award_contract_rewards(contract)
     rewards = calculate_rewards(contract)
-    # Logique pour attribuer les récompenses à l'utilisateur
-    # À implémenter selon votre système de récompenses
+    current_user.update(
+      flex_balance: current_user.flex_balance + rewards[:amount] + rewards[:bonus]
+    )
   end
 end
