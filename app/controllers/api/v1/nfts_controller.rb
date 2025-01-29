@@ -8,17 +8,13 @@ class Api::V1::NftsController < ApplicationController
     @nft = Nft.find(params[:id])
     calculator = MetricsCalculator.new(@nft.item)
 
-    matches = @nft.badge_useds.includes(:match)
     render json: {
       nft: @nft,
       item_details: @nft.item,
-      usage_metrics: {
-        total_matches: matches.count,
-        total_profit: matches.sum { |bu| bu.match.profit },
-        total_bft_earned: matches.sum { |bu| bu.match.bft_earned }
-      },
       item_metrics: @nft.item.type.name == 'Badge' ? calculator.calculate_badge_metrics : calculator.calculate_contract_metrics
     }
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "NFT not found" }, status: :not_found
   end
 
   def create

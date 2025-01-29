@@ -6,16 +6,15 @@
 seed_files = [
   'rarities.rb',  # Définition des raretés
   'types.rb',     # Définition des types d'items
-  'badges.rb',    # Définition des badges (items spéciaux)
-  'users.rb',     # Création des utilisateurs
-  'nfts.rb',      # Création des instances de badges (NFTs)
-  'showrunner_contracts.rb'  # Ajout des contrats de showrunner
+  'badges.rb',    # Définition des badges
+  'showrunner_contracts.rb',  # Définition des contrats
+  'users.rb',     # Création des utilisateurs avec leurs items
+  'nfts.rb'      # Création des instances de badges (NFTs) supplémentaires si besoin
 ]
 
+puts "\nDébut du seeding..."
 seed_files.each do |file|
-  puts "Seeding #{file}..."
+  puts "\nSeeding #{file}..."
   load Rails.root.join('db', 'seeds', file)
-  puts "✓ Done"
 end
-
-puts "\nSeeding completed successfully! 🌱"
+puts "\n✓ Seeding completed successfully! 🌱"

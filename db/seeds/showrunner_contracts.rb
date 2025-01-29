@@ -1,54 +1,54 @@
-showrunner_type = Type.find_by!(name: 'Showrunner')
 rarities = Rarity.all
 
+# Définition des contrats showrunner avec les métriques essentielles
 contracts = [
   {
-    name: "Rookie Showrunner",
+    name: "Rookie Showrunner Contract",
     rarity_name: "Common",
-    efficiency: 40, # Win rate requirement
-    supply: 1000,
-    floorPrice: 50, # Reward amount
-    farming: {
-      in_game_time: 5, # Required matches
-      efficiency: 40,
-      ratio: 1.0
-    }
+    type_name: "Contract",
+    efficiency: 0.1,
+    supply: 50_000,
+    floorPrice: 32.30
   },
   {
-    name: "Veteran Showrunner",
+    name: "Initiate Showrunner Contract",
+    rarity_name: "Uncommon",
+    type_name: "Contract",
+    efficiency: 0.205,
+    supply: 35_000,
+    floorPrice: 51.00
+  },
+  {
+    name: "Encore Showrunner Contract",
     rarity_name: "Rare",
-    efficiency: 55,
-    supply: 500,
-    floorPrice: 150,
-    farming: {
-      in_game_time: 10,
-      efficiency: 55,
-      ratio: 1.2
-    }
+    type_name: "Contract",
+    efficiency: 0.5,
+    supply: 20_000,
+    floorPrice: 129.00
   },
   {
-    name: "Elite Showrunner",
+    name: "Contender Showrunner Contract",
     rarity_name: "Epic",
-    efficiency: 65,
-    supply: 200,
-    floorPrice: 300,
-    farming: {
-      in_game_time: 15,
-      efficiency: 65,
-      ratio: 1.5
-    }
+    type_name: "Contract",
+    efficiency: 1.292,
+    supply: 10_000,
+    floorPrice: 324.00
   },
   {
-    name: "Master Showrunner",
+    name: "Champion Showrunner Contract",
+    rarity_name: "Exalted",
+    type_name: "Contract",
+    efficiency: 2.5,
+    supply: 1_000,
+    floorPrice: 4_500.00
+  },
+  {
+    name: "Challenger Showrunner Contract",
     rarity_name: "Legendary",
-    efficiency: 75,
-    supply: 50,
-    floorPrice: 1000,
-    farming: {
-      in_game_time: 20,
-      efficiency: 75,
-      ratio: 2.0
-    }
+    type_name: "Contract",
+    efficiency: 5.0,
+    supply: 5_000,
+    floorPrice: 498.00
   }
 ]
 
@@ -57,9 +57,9 @@ contracts.each do |contract_data|
   rarity = Rarity.find_by!(name: contract_data[:rarity_name])
   puts "- Création du contrat #{contract_data[:name]} (#{contract_data[:rarity_name]})"
 
-  # Création du contrat (item de type Showrunner)
+  # Création du contrat
   contract = Item.find_or_create_by!(name: contract_data[:name]) do |c|
-    c.type = showrunner_type
+    c.type = Type.find_by!(name: contract_data[:type_name])
     c.rarity = rarity
     c.efficiency = contract_data[:efficiency]
     c.supply = contract_data[:supply]
@@ -68,10 +68,9 @@ contracts.each do |contract_data|
 
   # Création des données de farming
   ItemFarming.find_or_create_by!(item: contract) do |farming|
-    farming_data = contract_data[:farming]
-    farming.in_game_time = farming_data[:in_game_time]
-    farming.efficiency = farming_data[:efficiency]
-    farming.ratio = farming_data[:ratio]
+    farming.ratio = 1.0
+    farming.efficiency = contract.efficiency
+    farming.in_game_time = 600 # 10 minutes par défaut
   end
 end
 puts "✓ Contrats de showrunner créés avec succès"
