@@ -6,9 +6,16 @@ class Api::V1::PlayerCyclesController < ApplicationController
 
   def show
     @cycle = PlayerCycle.find(params[:id])
+    badge_metrics = calculate_cycle_badge_metrics(@cycle)
+
     render json: {
       cycle: @cycle,
-      metrics: calculate_cycle_metrics(@cycle)
+      metrics: {
+        total_energy_spent: @cycle.matches.sum(:energyUsed),
+        total_profit: @cycle.matches.sum(:profit),
+        average_profit_per_match: @cycle.matches.average(:profit),
+        badge_performance: badge_metrics
+      }
     }
   end
 
@@ -38,12 +45,25 @@ class Api::V1::PlayerCyclesController < ApplicationController
 
   private
 
-  def calculate_cycle_metrics(cycle)
-    {
-      total_energy_spent: cycle.matches.sum(:energyUsed),
-      total_profit: cycle.matches.sum(:profit),
-      average_profit_per_match: cycle.matches.average(:profit)
-    }
+  def calculate_cycle_badge_metrics(cycle)
+    badges_used = cycle.matches.joins(:badge_useds).group('badge_useds.badge_id').count
+
+    badges_used.map do |badge_id, usage_count|
+      badge = Badge.find(badge_id)
+      calculator = MetricsCalculator.new(badge.item)
+      metrics = calculator.calculate_badge_metrics
+
+      {
+        badge_id: badge_id,
+        usage_count: usage_count,
+        efficiency: metrics[:efficiency],
+        total_profit_contribution: cycle.matches
+          .joins(:badge_useds)
+          .where(badge_useds: { badge_id: badge_id })
+          .sum(:profit),
+        metrics: metrics
+      }
+    end
   end
 
   def cycle_params

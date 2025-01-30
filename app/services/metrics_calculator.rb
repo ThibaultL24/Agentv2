@@ -128,7 +128,11 @@ class MetricsCalculator
   def initialize(item, user = nil)
     @item = item
     @user = user
-    @metrics = BASE_METRICS[@item.rarity.name]
+    @metrics = if @item.respond_to?(:rarity)
+                BASE_METRICS[@item.rarity.name]
+              else
+                {}
+              end
   end
 
   def calculate_badge_metrics
@@ -164,28 +168,53 @@ class MetricsCalculator
   end
 
   def calculate_contract_metrics
-    return unless @item.type.name == 'Contract'
     {
-      # Métriques de base
       rarity: @item.rarity.name,
       name: @item.name,
       supply: @item.supply,
       floor_price: @item.floorPrice,
       efficiency: @item.efficiency,
       farming_time: @item.item_farming&.in_game_time || 600,
-
-      # Métriques de craft
       craft_time: @metrics[:craft_time],
       nb_badges_required: @item.item_crafting&.nb_lower_badge_to_craft,
       flex_craft_cost: @item.item_crafting&.flex_craft,
       sponsor_marks_cost: @item.item_crafting&.sponsor_mark_craft,
       total_craft_cost_usd: calculate_total_craft_cost,
-
-      # Métriques de progression
       required_matches: @item.item_farming&.in_game_time || 10,
       required_win_rate: @item.efficiency,
       reward_amount: @item.floorPrice,
-      progress: calculate_contract_progress if @user
+      progress: @user ? calculate_contract_progress : nil
+    }
+  end
+
+  def calculate_match_metrics
+    {
+      tokens_earned: @item.totalToken,
+      premium_earned: @item.totalPremiumCurrency,
+      profit: @item.profit,
+      efficiency_ratio: @item.totalToken.to_f / @item.energyUsed
+    }
+  end
+
+  def calculate_cycle_metrics
+    return {} unless @item.is_a?(PlayerCycle)
+
+    matches = Match.where(user_id: @item.user_id)
+                  .where('date >= ? AND date <= ?', @item.startDate, @item.endDate)
+
+    total_matches = matches.count
+    total_profit = matches.sum(:profit)
+    total_tokens = matches.sum(:totalToken)
+    total_premium = matches.sum(:totalPremiumCurrency)
+    total_energy = matches.sum(:energyUsed)
+
+    {
+      total_matches: total_matches,
+      total_profit: total_profit,
+      average_profit_per_match: total_matches > 0 ? total_profit / total_matches : 0,
+      total_tokens_earned: total_tokens,
+      total_premium_earned: total_premium,
+      average_efficiency_ratio: total_energy > 0 ? total_tokens.to_f / total_energy : 0
     }
   end
 
@@ -220,7 +249,7 @@ class MetricsCalculator
   end
 
   def calculate_roi_days
-    return 0 unless @item.floorPrice && @item.floorPrice > 0
+    return Float::INFINITY unless @item.floorPrice && @item.floorPrice > 0
 
     daily_profit = calculate_daily_profit
     return Float::INFINITY if daily_profit <= 0

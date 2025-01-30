@@ -6,9 +6,25 @@ class Api::V1::MatchesController < ApplicationController
 
   def show
     @match = Match.find(params[:id])
+    badge = @match.badge_useds.first&.badge
+    metrics = badge ? MetricsCalculator.new(badge.item).calculate_badge_metrics : {}
+
     render json: {
       match: @match,
-      metrics: calculate_match_metrics,
+      metrics: {
+        combat_stats: {
+          damage_dealt: @match.damage_dealt,
+          damage_taken: @match.damage_taken,
+          critical_hits: @match.critical_hits
+        },
+        time_efficiency: @match.profit / @match.time,
+        badge_metrics: metrics,
+        multipliers: {
+          bonus: @match.bonusMultiplier,
+          perks: @match.perksMultiplier,
+          badge: metrics[:efficiency]
+        }
+      },
       rewards: calculate_match_rewards
     }
   end
@@ -38,22 +54,6 @@ class Api::V1::MatchesController < ApplicationController
   end
 
   private
-
-  def calculate_match_metrics
-    {
-      combat_stats: {
-        damage_dealt: @match.damage_dealt,
-        damage_taken: @match.damage_taken,
-        critical_hits: @match.critical_hits
-      },
-      time_efficiency: @match.profit / @match.time,
-      multipliers: {
-        bonus: @match.bonusMultiplier,
-        perks: @match.perksMultiplier,
-        badge: calculate_badge_multiplier
-      }
-    }
-  end
 
   def calculate_match_rewards
     {

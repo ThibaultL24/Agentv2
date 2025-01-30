@@ -15,8 +15,8 @@ FactoryBot.define do
     tokenValue { 100.0 }
     totalPremiumCurrency { 10 }
     premiumCurrencyValue { 50.0 }
-    profit { 150.0 }
-    bonusMultiplier { 1.5 }
-    perksMultiplier { 1.2 }
+    profit { 400 }
+    bonusMultiplier { 1.0 }
+    perksMultiplier { 1.0 }
   end
 end

@@ -2,10 +2,11 @@ require_relative "boot"
 
 require "rails/all"
 
-# Require the gems listed in Gemfile
+# Require the gems listed in Gemfile, including any gems
+# you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-module Agent
+module Agentv2
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.0
@@ -24,5 +25,15 @@ module Agent
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.middleware.use Warden::Manager
+
+    # Désactiver Bootsnap en test
+    if Rails.env.test?
+      config.cache_classes = false
+      config.eager_load = false
+      config.autoloader = :classic
+    end
+
+    # Configuration par défaut pour l'API
+    config.api_only = true
   end
 end
