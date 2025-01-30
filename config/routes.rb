@@ -35,8 +35,16 @@ Rails.application.routes.draw do
       resources :item_recharge
       resources :matches
       resources :player_cycles
-      resources :nfts
-      resources :user_builds
+      resources :nfts, only: [:index, :show, :update, :destroy] do
+        collection do
+          post 'create'
+        end
+      end
+      resources :user_builds, only: [:index, :show, :update, :destroy] do
+        collection do
+          post 'create'
+        end
+      end
       resources :slots
 
       resources :showrunner_contracts do
@@ -52,7 +60,7 @@ Rails.application.routes.draw do
       resources :currencies
       resources :currency_packs
       resources :user_slots
-      resources :user_recharges
+      resources :user_recharges, only: [:index, :show, :update]
 
       resources :badge_useds
 

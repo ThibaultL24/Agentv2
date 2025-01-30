@@ -1,122 +1,142 @@
 class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
   def index
-    @contracts = if params[:status] == 'available'
-      Item.joins(:type, :rarity)
-          .where(types: { name: 'Showrunner' })
-          .where('rarities.name <= ?', current_user.maxRarity)
-          .includes(:item_farming, :rarity, :type)
-          .order('rarities.name ASC')
-    else
-      current_user.nfts
-                 .joins(item: [:type, :rarity])
-                 .includes(item: [:item_farming, :rarity, :type])
-                 .where(types: { name: 'Showrunner' })
-                 .order('rarities.name ASC')
-    end
+    puts "\nUtilisateur connecté:"
+    puts "- ID: #{current_user.id}"
+    puts "- Username: #{current_user.username}"
+    puts "- MaxRarity: #{current_user.maxRarity}"
 
-    render json: @contracts, include: [
-      :rarity,
-      :type,
-      :item_farming
-    ]
+    if params[:status] == 'available'
+      # On récupère les IDs des contrats déjà possédés
+      owned_item_ids = current_user.nfts
+                                 .joins(item: :type)
+                                 .where(types: { name: 'Contract' })
+                                 .select(:itemId)
+                                 .distinct
+                                 .pluck(:itemId)
+
+      puts "\nContrats possédés (IDs): #{owned_item_ids}"
+
+      # On récupère les contrats disponibles
+      @contracts = Item.joins(:type, :rarity)
+                      .where(types: { name: 'Contract' })
+                      .where.not(id: owned_item_ids)
+                      .order('rarities.name ASC')
+
+      puts "Contrats disponibles: #{@contracts.map { |b| "#{b.name} (#{b.rarity.name})" }}"
+
+      render json: @contracts.map { |item|
+        {
+          contract: {
+            id: item.id,
+            name: item.name,
+            rarity: item.rarity.name,
+            efficiency: item.efficiency,
+            supply: item.supply,
+            floorPrice: item.floorPrice
+          }
+        }
+      }
+    else
+      # On récupère les contrats possédés par l'utilisateur
+      @nfts = current_user.nfts
+                         .joins(item: [:type, :rarity])
+                         .where(types: { name: 'Contract' })
+                         .select('DISTINCT ON (items.id) nfts.*')
+                         .order('items.id, nfts.created_at DESC')
+
+      puts "\nContrats possédés: #{@nfts.map { |nft| "#{nft.item.name} (#{nft.item.rarity.name})" }}"
+
+      render json: @nfts.map { |nft|
+        {
+          contract: {
+            id: nft.id,
+            issueId: nft.issueId,
+            name: nft.item.name,
+            rarity: nft.item.rarity.name,
+            efficiency: nft.item.efficiency,
+            supply: nft.item.supply,
+            floorPrice: nft.item.floorPrice,
+            purchasePrice: nft.purchasePrice
+          }
+        }
+      }
+    end
   end
 
   def show
-    @contract = Item.joins(:type)
-                   .where(types: { name: 'Showrunner' })
-                   .includes(:item_farming, :rarity, :type)
-                   .find(params[:id])
+    @contract = if params[:type] == 'item'
+      Item.joins(:type, :rarity)
+          .where(types: { name: 'Contract' })
+          .find(params[:id])
+    else
+      current_user.nfts
+                 .joins(item: [:type, :rarity])
+                 .where(types: { name: 'Contract' })
+                 .find(params[:id])
+    end
 
-    render json: {
-      contract: @contract,
-      requirements: @contract.contract_requirements,
-      progress: @contract.calculate_contract_progress(current_user)
-    }
+    render json: if params[:type] == 'item'
+      {
+        contract: {
+          id: @contract.id,
+          name: @contract.name,
+          rarity: @contract.rarity.name,
+          efficiency: @contract.efficiency,
+          supply: @contract.supply,
+          floorPrice: @contract.floorPrice
+        }
+      }
+    else
+      {
+        contract: {
+          id: @contract.id,
+          issueId: @contract.issueId,
+          name: @contract.item.name,
+          rarity: @contract.item.rarity.name,
+          efficiency: @contract.item.efficiency,
+          supply: @contract.item.supply,
+          floorPrice: @contract.item.floorPrice,
+          purchasePrice: @contract.purchasePrice
+        }
+      }
+    end
   rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Contract not found' }, status: :not_found
+    render json: { error: "Contract not found or not accessible" }, status: :not_found
   end
 
   def accept
     @contract = Item.joins(:type)
-                   .where(types: { name: 'Showrunner' })
+                   .where(types: { name: 'Contract' })
                    .find(params[:id])
 
-    # Vérifier si l'utilisateur a déjà accepté ce contrat
-    if current_user.nfts.exists?(itemId: @contract.id, status: ['in_progress', 'completed'])
-      return render json: { error: 'Contract already accepted or completed' }, status: :unprocessable_entity
+    # Vérifier si l'utilisateur a déjà ce contrat
+    if current_user.nfts.exists?(itemId: @contract.id)
+      return render json: { error: 'Contract already owned' }, status: :unprocessable_entity
     end
 
     nft = Nft.new(
       itemId: @contract.id,
       owner: current_user.id,
       purchasePrice: @contract.floorPrice,
-      status: 'in_progress'
+      issueId: Nft.where(itemId: @contract.id).count + 1
     )
 
     if nft.save
       render json: {
         message: 'Contract accepted successfully',
-        contract: nft
+        contract: {
+          id: nft.id,
+          name: @contract.name,
+          rarity: @contract.rarity.name,
+          efficiency: @contract.efficiency,
+          purchasePrice: nft.purchasePrice,
+          issueId: nft.issueId
+        }
       }
     else
       render json: { error: 'Cannot accept this contract', details: nft.errors.full_messages }, status: :unprocessable_entity
     end
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Contract not found' }, status: :not_found
-  end
-
-  def complete
-    @nft = current_user.nfts
-                      .joins(item: :type)
-                      .where(types: { name: 'Showrunner' })
-                      .find(params[:id])
-
-    return render json: { error: 'Contract is not in progress' }, status: :unprocessable_entity unless @nft.status == 'in_progress'
-
-    @contract = @nft.item
-    progress = @contract.calculate_contract_progress(current_user)
-
-    if progress[:completion_percentage] >= 100
-      @nft.update(status: 'completed')
-      award_contract_rewards(@contract)
-      render json: {
-        message: 'Contract completed successfully',
-        contract: @nft,
-        rewards: calculate_rewards(@contract)
-      }
-    else
-      render json: {
-        error: 'Contract requirements not met',
-        current_progress: progress
-      }, status: :unprocessable_entity
-    end
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Contract not found' }, status: :not_found
-  end
-
-  private
-
-  def calculate_rewards(contract)
-    requirements = contract.contract_requirements
-    progress = contract.calculate_contract_progress(current_user)
-
-    bonus = if progress[:current_win_rate] >= requirements[:min_win_rate] + 10
-      (requirements[:reward_amount] * 0.1).round(2)
-    else
-      0
-    end
-
-    {
-      amount: requirements[:reward_amount],
-      currency: 'FLEX',
-      bonus: bonus
-    }
-  end
-
-  def award_contract_rewards(contract)
-    rewards = calculate_rewards(contract)
-    current_user.update(
-      flex_balance: current_user.flex_balance + rewards[:amount] + rewards[:bonus]
-    )
   end
 end
