@@ -9,7 +9,8 @@ seed_files = [
   'badges.rb',    # Définition des badges
   'showrunner_contracts.rb',  # Définition des contrats
   'users.rb',     # Création des utilisateurs avec leurs items
-  'nfts.rb'      # Création des instances de badges (NFTs) supplémentaires si besoin
+  'nfts.rb',      # Création des instances de badges (NFTs) supplémentaires si besoin
+  'user_recharges.rb'  # Création des réductions de recharge
 ]
 
 puts "\nDébut du seeding..."

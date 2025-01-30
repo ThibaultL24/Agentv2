@@ -3,14 +3,20 @@ class Api::V1::UserRechargesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_recharge, only: [:show, :update]
 
+  VALID_DISCOUNT_TIMES = [5, 9, 10, 13, 16, 20, 25].freeze
+
   def index
     @recharges = current_user.user_recharges
-    render json: @recharges.map { |recharge|
-      {
-        id: recharge.id,
-        discountTime: recharge.discountTime,
-        discountNumber: recharge.discountNumber
-      }
+    render json: {
+      recharges: @recharges.map { |recharge|
+        {
+          id: recharge.id,
+          discountTime: recharge.discountTime,
+          discountNumber: recharge.discountNumber,
+          description: get_discount_description(recharge.discountTime)
+        }
+      },
+      total_discounts: @recharges.sum(&:discountNumber)
     }
   end
 
@@ -19,7 +25,8 @@ class Api::V1::UserRechargesController < ApplicationController
       recharge: {
         id: @recharge.id,
         discountTime: @recharge.discountTime,
-        discountNumber: @recharge.discountNumber
+        discountNumber: @recharge.discountNumber,
+        description: get_discount_description(@recharge.discountTime)
       }
     }
   rescue ActiveRecord::RecordNotFound
@@ -32,7 +39,8 @@ class Api::V1::UserRechargesController < ApplicationController
         recharge: {
           id: @recharge.id,
           discountTime: @recharge.discountTime,
-          discountNumber: @recharge.discountNumber
+          discountNumber: @recharge.discountNumber,
+          description: get_discount_description(@recharge.discountTime)
         }
       }
     else
@@ -50,5 +58,18 @@ class Api::V1::UserRechargesController < ApplicationController
 
   def recharge_params
     params.require(:user_recharge).permit(:discountNumber)
+  end
+
+  def get_discount_description(discount_time)
+    case discount_time
+    when 25 then "Legendary Rowdy Fighter Discount"
+    when 20 then "Gladiator Rowdy Fighter Discount"
+    when 16 then "Fighter Rowdy Fighter Discount"
+    when 13 then "Challenger Rowdy Fighter Discount"
+    when 10 then "Debutant Rowdy Fighter Discount"
+    when 9 then "Tournament Winner Discount"
+    when 5 then "Alpha Fighter Discount"
+    else "Standard Discount"
+    end
   end
 end

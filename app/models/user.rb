@@ -9,6 +9,10 @@ class User < ApplicationRecord
   has_many :matches
   has_many :user_slots
   has_many :user_builds
+  has_many :user_recharges
+  has_many :player_cycles
+  has_many :slots, through: :user_slots
+  has_many :transactions
 
   # Validations
   validates :username, presence: true, uniqueness: true
