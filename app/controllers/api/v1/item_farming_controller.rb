@@ -6,19 +6,16 @@ class Api::V1::ItemFarmingController < ApplicationController
 
   def show
     @item_farming = ItemFarming.find(params[:id])
+    calculator = MetricsCalculator.new(@item_farming.item)
+    metrics = calculator.calculate_badge_metrics
+
     render json: {
       farming_data: @item_farming,
-      metrics: calculate_farming_metrics
-    }
-  end
-
-  private
-
-  def calculate_farming_metrics
-    {
-      daily_profit: @item_farming.efficiency * @item_farming.ratio,
-      time_efficiency: @item_farming.ratio / @item_farming.inGameTime,
-      estimated_daily_runs: 24 * 60 / @item_farming.inGameTime
+      metrics: {
+        daily_profit: metrics[:bft_per_day],
+        matches_per_day: metrics[:matches_per_day],
+        efficiency: metrics[:efficiency]
+      }
     }
   end
 end

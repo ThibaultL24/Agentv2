@@ -6,9 +6,12 @@ class Api::V1::ItemsController < ApplicationController
 
   def show
     @item = Item.find(params[:id])
+    calculator = MetricsCalculator.new(@item)
+
     render json: {
       item: @item,
-      market_data: calculate_market_metrics
+      market_data: calculate_market_metrics,
+      metrics: @item.type.name == 'Badge' ? calculator.calculate_badge_metrics : calculator.calculate_contract_metrics
     }
   end
 

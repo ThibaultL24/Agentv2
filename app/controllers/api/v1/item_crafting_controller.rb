@@ -6,9 +6,17 @@ class Api::V1::ItemCraftingController < ApplicationController
 
   def show
     @item_crafting = ItemCrafting.find(params[:id])
+    calculator = MetricsCalculator.new(@item_crafting.item)
+    metrics = calculator.calculate_badge_metrics
+
     render json: {
       crafting_data: @item_crafting,
-      metrics: calculate_crafting_metrics
+      metrics: {
+        craft_time: metrics[:craft_time],
+        flex_craft_cost: metrics[:flex_craft_cost],
+        sponsor_marks_cost: metrics[:sponsor_marks_cost],
+        total_craft_cost_usd: metrics[:total_craft_cost_usd]
+      }
     }
   end
 

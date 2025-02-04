@@ -29,7 +29,7 @@ class Api::V1::BaseController < ApplicationController
       token = request.headers['Authorization'].split(' ').last
       begin
         jwt_payload = JWT.decode(token, Rails.application.credentials.devise_jwt_secret_key!).first
-        @current_user_id = jwt_payload['sub']
+        @current_user_id = jwt_payload['id']
       rescue JWT::ExpiredSignature, JWT::VerificationError, JWT::DecodeError
         head :unauthorized
       end
