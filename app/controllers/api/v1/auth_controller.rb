@@ -10,6 +10,7 @@ class Api::V1::AuthController < ApplicationController
         token: token,
         user: {
           id: user.id,
+          username: user.username,
           email: user.email
         }
       }
