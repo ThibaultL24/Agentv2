@@ -5,7 +5,7 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
   # Associations
-  has_many :nfts, foreign_key: :owner, primary_key: :id
+  has_many :nfts, foreign_key: :owner, primary_key: :openLootID
   has_many :matches
   has_many :user_slots
   has_many :user_builds
@@ -18,26 +18,17 @@ class User < ApplicationRecord
   validates :username, presence: true, uniqueness: true
   validates :email, presence: true, uniqueness: true
 
-  # Permettre l'attribution massive de ces champs
-  attr_accessor :username
-
   # JWT token generation
   def generate_jwt
     JWT.encode(
       {
         id: id,
+        email: email,
+        username: username,
         exp: 60.days.from_now.to_i
       },
       Rails.application.credentials.devise_jwt_secret_key!
     )
-  end
-
-  def jwt_payload
-    {
-      'id' => id,
-      'email' => email,
-      'username' => username
-    }
   end
 
   def on_jwt_dispatch(_token, _payload)
