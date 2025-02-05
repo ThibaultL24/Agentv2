@@ -27,7 +27,7 @@ Rails.application.routes.draw do
         },
         defaults: { format: :json }
 
-      resources :users, only: [:show, :update]
+      resources :users, only: [:show, :update, :destroy]
       resources :badges
       resources :items
       resources :item_farming
@@ -66,6 +66,7 @@ Rails.application.routes.draw do
 
       get 'profile', to: 'users#profile'
       patch 'profile', to: 'users#update_profile'
+      delete 'profile', to: 'users#delete_profile'
     end
   end
 

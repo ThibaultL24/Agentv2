@@ -37,6 +37,14 @@ class Api::V1::UsersController < ApplicationController
     head :no_content
   end
 
+  def delete_profile
+    if current_user&.destroy
+      render json: { message: 'Profile successfully deleted' }, status: :ok
+    else
+      render json: { error: 'Failed to delete profile' }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def calculate_user_stats
