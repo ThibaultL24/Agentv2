@@ -1,6 +1,6 @@
 class Api::V1::NftsController < ApplicationController
   def index
-    @nfts = current_user.nfts.includes(item: [:type, :rarity])
+    @nfts = Nft.where(owner: current_user.id.to_s).includes(item: [:type, :rarity])
     render json: @nfts.map { |nft|
       {
         id: nft.id,
@@ -52,7 +52,7 @@ class Api::V1::NftsController < ApplicationController
       item: item,
       issueId: nft_params[:issueId],
       purchasePrice: nft_params[:purchasePrice] || 0.0,
-      owner: current_user.id
+      owner: current_user.id.to_s
     )
 
     if @nft.save

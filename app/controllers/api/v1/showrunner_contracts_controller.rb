@@ -38,11 +38,11 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
       }
     else
       # On récupère les contrats possédés par l'utilisateur
-      @nfts = current_user.nfts
-                         .joins(item: [:type, :rarity])
-                         .where(types: { name: 'Contract' })
-                         .select('DISTINCT ON (items.id) nfts.*')
-                         .order('items.id, nfts.created_at DESC')
+      @nfts = Nft.joins(item: [:type, :rarity])
+                 .where(owner: current_user.id)
+                 .where(types: { name: 'Contract' })
+                 .select('DISTINCT ON (items.id) nfts.*')
+                 .order('items.id, nfts.created_at DESC')
 
       puts "\nContrats possédés: #{@nfts.map { |nft| "#{nft.item.name} (#{nft.item.rarity.name})" }}"
 
