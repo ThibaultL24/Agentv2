@@ -6,6 +6,10 @@
 seed_files = [
   'rarities.rb',  # Définition des raretés
   'types.rb',     # Définition des types d'items
+  'game.rb',      # Création du jeu
+  'currencies.rb',# Création des currencies
+  'currency_packs.rb', # Création des packs de currencies
+  'slots.rb',     # Création des slots (dépend des currencies)
   'badges.rb',    # Définition des badges
   'showrunner_contracts.rb',  # Définition des contrats
   'users.rb',     # Création des utilisateurs avec leurs items

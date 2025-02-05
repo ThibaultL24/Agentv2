@@ -27,6 +27,10 @@ Rails.application.routes.draw do
         },
         defaults: { format: :json }
 
+      # Routes publiques pour les currencies et currency_packs
+      resources :currencies, only: [:index, :show]
+      resources :currency_packs, only: [:index, :show]
+
       resources :users, only: [:show, :update, :destroy]
       resources :badges
       resources :items
@@ -57,8 +61,6 @@ Rails.application.routes.draw do
       resources :rarities, only: [:index, :show]
       resources :types, only: [:index, :show]
       resources :games
-      resources :currencies
-      resources :currency_packs
       resources :user_slots
       resources :user_recharges, only: [:index, :show, :update]
 

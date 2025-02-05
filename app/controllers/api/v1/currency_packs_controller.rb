@@ -1,11 +1,14 @@
-class Api::V1::CurrencyPacksController < Api::V1::BaseController
+class Api::V1::CurrencyPacksController < ApplicationController
   def index
-    @packs = CurrencyPack.includes(:currency)
-    render json: @packs
+    @currency_packs = CurrencyPack.all
+    render json: @currency_packs
   end
 
   def show
-    @pack = CurrencyPack.find(params[:id])
-    render json: @pack
+    @currency_pack = CurrencyPack.find(params[:id])
+    render json: {
+      currency_pack: @currency_pack,
+      currency: @currency_pack.currency
+    }
   end
 end

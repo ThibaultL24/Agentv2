@@ -1,6 +1,6 @@
-class Api::V1::CurrenciesController < Api::V1::BaseController
+class Api::V1::CurrenciesController < ApplicationController
   def index
-    @currencies = Currency.includes(:game)
+    @currencies = Currency.all
     render json: @currencies
   end
 
@@ -8,7 +8,7 @@ class Api::V1::CurrenciesController < Api::V1::BaseController
     @currency = Currency.find(params[:id])
     render json: {
       currency: @currency,
-      packs: @currency.currency_packs
+      currency_packs: @currency.currency_packs
     }
   end
 end

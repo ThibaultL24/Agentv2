@@ -1,15 +1,12 @@
 class Api::V1::SlotsController < ApplicationController
   def index
-    @slots = Slot.includes(:game, :currency)
+    @slots = Slot.all
     render json: @slots
   end
 
   def show
     @slot = Slot.find(params[:id])
-    render json: {
-      slot: @slot,
-      metrics: calculate_slot_metrics(@slot)
-    }
+    render json: @slot
   end
 
   private
