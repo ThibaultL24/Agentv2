@@ -1,67 +1,44 @@
 class Api::V1::BadgesController < Api::V1::BaseController
   def index
-    # Debug: Afficher les infos de l'utilisateur connecté
-    puts "\nUtilisateur connecté:"
-    puts "- ID: #{current_user.id}"
-    puts "- Username: #{current_user.username}"
-    puts "- MaxRarity: #{current_user.maxRarity}"
-
-    if params[:status] == 'available'
-      # On récupère les IDs des badges déjà possédés
-      owned_item_ids = current_user.nfts
-                                 .joins(item: :type)
-                                 .where(types: { name: 'Badge' })
-                                 .select(:itemId)
-                                 .distinct
-                                 .pluck(:itemId)
-
-      puts "\nBadges possédés (IDs): #{owned_item_ids}"
-
-      # On récupère les badges disponibles
-      @badges = Item.joins(:type, :rarity)
-                   .where(types: { name: 'Badge' })
-                   .where.not(id: owned_item_ids)
-                   .order('rarities.name ASC')
-
-      puts "Badges disponibles: #{@badges.map { |b| "#{b.name} (#{b.rarity.name})" }}"
-
-      render json: @badges.map { |item|
-        {
-          badge: {
-            id: item.id,
-            name: item.name,
-            rarity: item.rarity.name,
-            efficiency: item.efficiency,
-            supply: item.supply,
-            floorPrice: item.floorPrice
-          }
-        }
-      }
-    else
-      # On récupère les badges possédés par l'utilisateur
-      @nfts = Nft.joins(item: [:type, :rarity])
-                 .where(owner: current_user.id)
+    @badges = Item.joins(:type, :rarity)
                  .where(types: { name: 'Badge' })
-                 .select('DISTINCT ON (items.id) nfts.*')
-                 .order('items.id, nfts.created_at DESC')
+                 .order('rarities.name ASC')
 
-      puts "\nBadges possédés: #{@nfts.map { |nft| "#{nft.item.name} (#{nft.item.rarity.name})" }}"
-
-      render json: @nfts.map { |nft|
-        {
-          badge: {
-            id: nft.id,
-            issueId: nft.issueId,
-            name: nft.item.name,
-            rarity: nft.item.rarity.name,
-            efficiency: nft.item.efficiency,
-            supply: nft.item.supply,
-            floorPrice: nft.item.floorPrice,
-            purchasePrice: nft.purchasePrice
-          }
+    render json: @badges.map { |item|
+      {
+        badge: {
+          id: item.id,
+          name: item.name,
+          rarity: item.rarity.as_json(only: [:id, :name, :color]),
+          efficiency: item.efficiency,
+          supply: item.supply,
+          floorPrice: item.floorPrice
         }
       }
-    end
+    }
+  end
+
+  def owned_badges
+    @nfts = Nft.joins(item: [:type, :rarity])
+               .where(owner: current_user.id.to_s)
+               .where(types: { name: 'Badge' })
+               .select('DISTINCT ON (items.id) nfts.*')
+               .order('items.id, nfts.created_at DESC')
+
+    render json: @nfts.map { |nft|
+      {
+        nft_badge: {
+          id: nft.id,
+          issueId: nft.issueId,
+          name: nft.item.name,
+          rarity: nft.item.rarity.as_json(only: [:id, :name, :color]),
+          efficiency: nft.item.efficiency,
+          supply: nft.item.supply,
+          floorPrice: nft.item.floorPrice,
+          purchasePrice: nft.purchasePrice
+        }
+      }
+    }
   end
 
   def show
@@ -84,7 +61,7 @@ class Api::V1::BadgesController < Api::V1::BaseController
         badge: {
           id: @badge.id,
           name: @badge.name,
-          rarity: @badge.rarity.name,
+          rarity: @badge.rarity.as_json(only: [:id, :name, :color]),
           efficiency: @badge.efficiency,
           supply: @badge.supply,
           floorPrice: @badge.floorPrice
@@ -98,11 +75,11 @@ class Api::V1::BadgesController < Api::V1::BaseController
       }
     else
       {
-        badge: {
+        nft_badge: {
           id: @badge.id,
           issueId: @badge.issueId,
           name: @badge.item.name,
-          rarity: @badge.item.rarity.name,
+          rarity: @badge.item.rarity.as_json(only: [:id, :name, :color]),
           efficiency: @badge.item.efficiency,
           supply: @badge.item.supply,
           floorPrice: @badge.item.floorPrice,

@@ -32,7 +32,11 @@ Rails.application.routes.draw do
       resources :currency_packs, only: [:index, :show]
 
       resources :users, only: [:show, :update, :destroy]
-      resources :badges
+      resources :badges do
+        collection do
+          get 'owned', to: 'badges#owned_badges'
+        end
+      end
       resources :items
       resources :item_farming
       resources :item_crafting
@@ -52,6 +56,9 @@ Rails.application.routes.draw do
       resources :slots
 
       resources :showrunner_contracts do
+        collection do
+          get 'owned', to: 'showrunner_contracts#owned_contracts'
+        end
         member do
           post 'accept'
           post 'complete'

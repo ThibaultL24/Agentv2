@@ -1,66 +1,44 @@
 class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
   def index
-    puts "\nUtilisateur connecté:"
-    puts "- ID: #{current_user.id}"
-    puts "- Username: #{current_user.username}"
-    puts "- MaxRarity: #{current_user.maxRarity}"
+    @contracts = Item.joins(:type, :rarity)
+                    .where(types: { name: 'Contract' })
+                    .order('rarities.name ASC')
 
-    if params[:status] == 'available'
-      # On récupère les IDs des contrats déjà possédés
-      owned_item_ids = current_user.nfts
-                                 .joins(item: :type)
-                                 .where(types: { name: 'Contract' })
-                                 .select(:itemId)
-                                 .distinct
-                                 .pluck(:itemId)
-
-      puts "\nContrats possédés (IDs): #{owned_item_ids}"
-
-      # On récupère les contrats disponibles
-      @contracts = Item.joins(:type, :rarity)
-                      .where(types: { name: 'Contract' })
-                      .where.not(id: owned_item_ids)
-                      .order('rarities.name ASC')
-
-      puts "Contrats disponibles: #{@contracts.map { |b| "#{b.name} (#{b.rarity.name})" }}"
-
-      render json: @contracts.map { |item|
-        {
-          contract: {
-            id: item.id,
-            name: item.name,
-            rarity: item.rarity.name,
-            efficiency: item.efficiency,
-            supply: item.supply,
-            floorPrice: item.floorPrice
-          }
+    render json: @contracts.map { |item|
+      {
+        contract: {
+          id: item.id,
+          name: item.name,
+          rarity: item.rarity.as_json(only: [:id, :name, :color]),
+          efficiency: item.efficiency,
+          supply: item.supply,
+          floorPrice: item.floorPrice
         }
       }
-    else
-      # On récupère les contrats possédés par l'utilisateur
-      @nfts = Nft.joins(item: [:type, :rarity])
-                 .where(owner: current_user.id)
-                 .where(types: { name: 'Contract' })
-                 .select('DISTINCT ON (items.id) nfts.*')
-                 .order('items.id, nfts.created_at DESC')
+    }
+  end
 
-      puts "\nContrats possédés: #{@nfts.map { |nft| "#{nft.item.name} (#{nft.item.rarity.name})" }}"
+  def owned_contracts
+    @nfts = Nft.joins(item: [:type, :rarity])
+               .where(owner: current_user.id.to_s)
+               .where(types: { name: 'Contract' })
+               .select('DISTINCT ON (items.id) nfts.*')
+               .order('items.id, nfts.created_at DESC')
 
-      render json: @nfts.map { |nft|
-        {
-          contract: {
-            id: nft.id,
-            issueId: nft.issueId,
-            name: nft.item.name,
-            rarity: nft.item.rarity.name,
-            efficiency: nft.item.efficiency,
-            supply: nft.item.supply,
-            floorPrice: nft.item.floorPrice,
-            purchasePrice: nft.purchasePrice
-          }
+    render json: @nfts.map { |nft|
+      {
+        nft_contract: {
+          id: nft.id,
+          issueId: nft.issueId,
+          name: nft.item.name,
+          rarity: nft.item.rarity.as_json(only: [:id, :name, :color]),
+          efficiency: nft.item.efficiency,
+          supply: nft.item.supply,
+          floorPrice: nft.item.floorPrice,
+          purchasePrice: nft.purchasePrice
         }
       }
-    end
+    }
   end
 
   def show
@@ -80,7 +58,7 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
         contract: {
           id: @contract.id,
           name: @contract.name,
-          rarity: @contract.rarity.name,
+          rarity: @contract.rarity.as_json(only: [:id, :name, :color]),
           efficiency: @contract.efficiency,
           supply: @contract.supply,
           floorPrice: @contract.floorPrice
@@ -88,11 +66,11 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
       }
     else
       {
-        contract: {
+        nft_contract: {
           id: @contract.id,
           issueId: @contract.issueId,
           name: @contract.item.name,
-          rarity: @contract.item.rarity.name,
+          rarity: @contract.item.rarity.as_json(only: [:id, :name, :color]),
           efficiency: @contract.item.efficiency,
           supply: @contract.item.supply,
           floorPrice: @contract.item.floorPrice,
@@ -116,7 +94,7 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
 
     nft = Nft.new(
       itemId: @contract.id,
-      owner: current_user.id,
+      owner: current_user.id.to_s,
       purchasePrice: @contract.floorPrice,
       issueId: Nft.where(itemId: @contract.id).count + 1
     )
