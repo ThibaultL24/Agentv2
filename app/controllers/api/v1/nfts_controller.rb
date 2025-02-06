@@ -113,11 +113,11 @@ class Api::V1::NftsController < ApplicationController
   end
 
   def destroy
-    @nft = current_user.nfts.find(params[:id])
+    @nft = Nft.find(params[:id])
     @nft.destroy
     render json: { message: "NFT successfully deleted" }, status: :ok
   rescue ActiveRecord::RecordNotFound
-    render json: { error: "NFT not found or not accessible" }, status: :not_found
+    render json: { error: "NFT not found" }, status: :not_found
   end
 
   private
