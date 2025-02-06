@@ -1,13 +1,11 @@
 class Api::V1::NftsController < ApplicationController
   def index
     @nfts = Nft.joins(item: [:type, :rarity])
-               .where(owner: current_user.id.to_s)
-               .select('DISTINCT ON (items.id) nfts.*')
-               .order('items.id, nfts.created_at DESC')
+               .order('created_at DESC')
 
     render json: {
       nfts: @nfts.map { |nft|
-        nft_json = {
+        {
           id: nft.id,
           issueId: nft.issueId,
           itemId: nft.itemId,
@@ -17,50 +15,33 @@ class Api::V1::NftsController < ApplicationController
           efficiency: nft.item.efficiency,
           supply: nft.item.supply,
           floorPrice: nft.item.floorPrice,
-          purchasePrice: nft.purchasePrice
+          purchasePrice: nft.purchasePrice,
+          owner: nft.owner
         }
-
-        # Ajouter une clé spécifique selon le type de NFT
-        case nft.item.type.name
-        when 'Badge'
-          { nft_badge: nft_json }
-        when 'Contract'
-          { nft_contract: nft_json }
-        else
-          { nft: nft_json }
-        end
       }
     }
   end
 
   def show
-    @nft = current_user.nfts
-                      .joins(item: [:type, :rarity])
-                      .find(params[:id])
+    @nft = Nft.joins(item: [:type, :rarity]).find(params[:id])
 
-    nft_json = {
-      id: @nft.id,
-      issueId: @nft.issueId,
-      itemId: @nft.itemId,
-      name: @nft.item.name,
-      type: @nft.item.type.as_json(only: [:id, :name]),
-      rarity: @nft.item.rarity.as_json(only: [:id, :name, :color]),
-      efficiency: @nft.item.efficiency,
-      supply: @nft.item.supply,
-      floorPrice: @nft.item.floorPrice,
-      purchasePrice: @nft.purchasePrice
+    render json: {
+      nft: {
+        id: @nft.id,
+        issueId: @nft.issueId,
+        itemId: @nft.itemId,
+        name: @nft.item.name,
+        type: @nft.item.type.as_json(only: [:id, :name]),
+        rarity: @nft.item.rarity.as_json(only: [:id, :name, :color]),
+        efficiency: @nft.item.efficiency,
+        supply: @nft.item.supply,
+        floorPrice: @nft.item.floorPrice,
+        purchasePrice: @nft.purchasePrice,
+        owner: @nft.owner
+      }
     }
-
-    # Utiliser la clé appropriée selon le type de NFT
-    response_key = case @nft.item.type.name
-                   when 'Badge' then :nft_badge
-                   when 'Contract' then :nft_contract
-                   else :nft
-                   end
-
-    render json: { response_key => nft_json }
   rescue ActiveRecord::RecordNotFound
-    render json: { error: "NFT not found or not accessible" }, status: :not_found
+    render json: { error: "NFT not found" }, status: :not_found
   end
 
   def create
