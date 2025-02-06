@@ -10,6 +10,7 @@ class Api::V1::NftsController < ApplicationController
         nft_json = {
           id: nft.id,
           issueId: nft.issueId,
+          itemId: nft.itemId,
           name: nft.item.name,
           type: nft.item.type.as_json(only: [:id, :name]),
           rarity: nft.item.rarity.as_json(only: [:id, :name, :color]),
@@ -40,6 +41,7 @@ class Api::V1::NftsController < ApplicationController
     nft_json = {
       id: @nft.id,
       issueId: @nft.issueId,
+      itemId: @nft.itemId,
       name: @nft.item.name,
       type: @nft.item.type.as_json(only: [:id, :name]),
       rarity: @nft.item.rarity.as_json(only: [:id, :name, :color]),
@@ -82,6 +84,7 @@ class Api::V1::NftsController < ApplicationController
         nft: {
           id: @nft.id,
           issueId: @nft.issueId,
+          itemId: @nft.itemId,
           name: item.name,
           type: item.type.as_json(only: [:id, :name]),
           rarity: item.rarity.as_json(only: [:id, :name, :color]),
@@ -103,6 +106,7 @@ class Api::V1::NftsController < ApplicationController
       nft_json = {
         id: @nft.id,
         issueId: @nft.issueId,
+        itemId: @nft.itemId,
         name: @nft.item.name,
         type: @nft.item.type.as_json(only: [:id, :name]),
         rarity: @nft.item.rarity.as_json(only: [:id, :name, :color]),
