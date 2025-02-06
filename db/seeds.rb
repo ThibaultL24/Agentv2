@@ -4,17 +4,16 @@
 
 # Charger les seeds dans un ordre spécifique pour respecter les dépendances
 seed_files = [
-  'rarities.rb',  # Définition des raretés
-  'types.rb',     # Définition des types d'items
-  'game.rb',      # Création du jeu
-  'currencies.rb',# Création des currencies
-  'currency_packs.rb', # Création des packs de currencies
-  'slots.rb',     # Création des slots (dépend des currencies)
-  'badges.rb',    # Définition des badges
-  'showrunner_contracts.rb',  # Définition des contrats
-  'users.rb',     # Création des utilisateurs avec leurs items
-  'nfts.rb',      # Création des instances de badges (NFTs) supplémentaires si besoin
-  'user_recharges.rb'  # Création des réductions de recharge
+  'rarities.rb',      # Définition des raretés
+  'types.rb',         # Définition des types d'items
+  'game.rb',          # Création du jeu
+  'currencies.rb',    # Création des currencies
+  'currency_packs.rb',# Création des packs de currencies
+  'slots.rb',         # Création des slots (dépend des currencies)
+  'items.rb',         # Création de tous les items (badges et contrats)
+  'users.rb',         # Création des utilisateurs
+  'nfts.rb',          # Création des NFTs pour les utilisateurs
+  'user_recharges.rb' # Création des réductions de recharge
 ]
 
 puts "\nDébut du seeding..."

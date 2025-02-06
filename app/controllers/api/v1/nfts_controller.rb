@@ -62,11 +62,8 @@ class Api::V1::NftsController < ApplicationController
   end
 
   def create
-    rarity = Rarity.find_by(name: nft_params[:rarity])
-    return render json: { error: "Select a Rarity for your NFT." }, status: :unprocessable_entity unless rarity
-
-    item = Item.find_by(rarity: rarity)
-    return render json: { error: "No item found for this rarity." }, status: :unprocessable_entity unless item
+    item = Item.find_by(id: nft_params[:itemId])
+    return render json: { error: "Item not found." }, status: :unprocessable_entity unless item
 
     # Vérifier si l'ID existe déjà
     if current_user.nfts.exists?(issueId: nft_params[:issueId])
@@ -74,7 +71,7 @@ class Api::V1::NftsController < ApplicationController
     end
 
     @nft = Nft.new(
-      item: item,
+      itemId: item.id,
       issueId: nft_params[:issueId],
       purchasePrice: nft_params[:purchasePrice] || 0.0,
       owner: current_user.id.to_s
@@ -85,9 +82,12 @@ class Api::V1::NftsController < ApplicationController
         nft: {
           id: @nft.id,
           issueId: @nft.issueId,
-          name: @nft.item.name,
-          type: @nft.item.type.name,
-          rarity: @nft.item.rarity.name,
+          name: item.name,
+          type: item.type.as_json(only: [:id, :name]),
+          rarity: item.rarity.as_json(only: [:id, :name, :color]),
+          efficiency: item.efficiency,
+          supply: item.supply,
+          floorPrice: item.floorPrice,
           purchasePrice: @nft.purchasePrice
         }
       }, status: :created
@@ -138,6 +138,6 @@ class Api::V1::NftsController < ApplicationController
   private
 
   def nft_params
-    params.require(:nft).permit(:issueId, :purchasePrice)
+    params.require(:nft).permit(:itemId, :issueId, :purchasePrice)
   end
 end

@@ -1,25 +1,44 @@
-puts "- Création des currencies"
+puts "\nCréation des currencies..."
 
 game = Game.find_by!(name: "Boss Fighters")
 
-# Définition des currencies
+# Définition des currencies de Boss Fighters
 currencies = [
   {
-    name: "Gold",
+    name: "CASH",
     onChain: false,
     price: 1.0,
     game: game
   },
   {
-    name: "Gems",
-    onChain: true,
+    name: "FLEX",
+    onChain: false,
     price: 10.0,
+    game: game
+  },
+  {
+    name: "$BFT",
+    onChain: true,
+    price: 100.0,
+    game: game
+  },
+  {
+    name: "Sponsor Marks",
+    onChain: true,
+    price: 50.0,
+    game: game
+  },
+  {
+    name: "Fame Points",
+    onChain: false,
+    price: 5.0,
     game: game
   }
 ]
 
 # Création des currencies
 currencies.each do |currency_data|
+  puts "- Création de la currency: #{currency_data[:name]}"
   Currency.find_or_create_by!(name: currency_data[:name]) do |c|
     c.onChain = currency_data[:onChain]
     c.price = currency_data[:price]

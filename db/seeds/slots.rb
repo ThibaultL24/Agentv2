@@ -1,59 +1,61 @@
 puts "- Création des slots de BADGEs"
 
 game = Game.find_by!(name: "Boss Fighters")
-gold = Currency.find_by!(name: "Gold")
-gems = Currency.find_by!(name: "Gems")
+cash = Currency.find_by!(name: "CASH")
+flex = Currency.find_by!(name: "FLEX")
 
 # Définition des slots avec leurs caractéristiques
 slots = [
   # Slot de base gratuit (toujours débloqué)
   {
-    currency: gold,
+    currency: cash,
     game: game,
     unlockCurrencyNumber: 0,
     unlockPrice: 0,
     unlocked: true,
     totalCost: 0
   },
-  # Slots Gold (accessibles avec la monnaie de base)
+  # Slots standards (accessibles avec CASH)
   {
-    currency: gold,
+    currency: cash,
     game: game,
-    unlockCurrencyNumber: 1000,
-    unlockPrice: 9.99,
+    unlockCurrencyNumber: 5_000,
+    unlockPrice: 4.99,
     unlocked: false,
-    totalCost: 9.99
+    totalCost: 4.99
   },
   {
-    currency: gold,
+    currency: cash,
     game: game,
-    unlockCurrencyNumber: 2500,
-    unlockPrice: 24.99,
+    unlockCurrencyNumber: 15_000,
+    unlockPrice: 12.99,
     unlocked: false,
-    totalCost: 24.99
+    totalCost: 12.99
   },
-  # Slots Premium (nécessitent des Gems)
+  # Slots Premium (nécessitent du FLEX)
   {
-    currency: gems,
+    currency: flex,
     game: game,
-    unlockCurrencyNumber: 100,
-    unlockPrice: 99.99,
+    unlockCurrencyNumber: 500,
+    unlockPrice: 4.99,
     unlocked: false,
-    totalCost: 99.99
+    totalCost: 4.99
   },
   {
-    currency: gems,
+    currency: flex,
     game: game,
-    unlockCurrencyNumber: 250,
-    unlockPrice: 249.99,
+    unlockCurrencyNumber: 1_500,
+    unlockPrice: 12.99,
     unlocked: false,
-    totalCost: 249.99
+    totalCost: 12.99
   }
 ]
 
-puts "  - Création de #{slots.length} slots (1 gratuit, 2 Gold, 2 Premium)"
+puts "  - Création de #{slots.length} slots (1 gratuit, 2 standards, 2 premium)"
 
 # Création des slots
 slots.each do |slot_data|
   Slot.create!(slot_data)
 end
+
+puts "✓ Slots créés avec succès"

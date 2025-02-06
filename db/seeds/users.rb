@@ -10,8 +10,11 @@ users = [
     maxRarity: "Common",
     items: [], # Nouveau joueur sans items
     currencies: {
-      gold: 100,    # Montant de départ en Gold
-      gems: 0       # Pas de Gems au début
+      "CASH" => 5_000,     # Pack de départ
+      "FLEX" => 500,       # Pack de départ
+      "$BFT" => 0,       # Rien au début
+      "Sponsor Marks" => 0,
+      "Fame Points" => 0
     },
     slots: ["free"] # Uniquement le slot gratuit
   },
@@ -25,10 +28,13 @@ users = [
     maxRarity: "Uncommon",
     items: ["Rookie Badge", "Rookie Showrunner Contract"],
     currencies: {
-      gold: 1000,
-      gems: 10
+      "CASH" => 15_000,
+      "FLEX" => 1_500,
+      "$BFT" => 100,
+      "Sponsor Marks" => 1_000,
+      "Fame Points" => 100
     },
-    slots: ["free", "gold_1"] # Slot gratuit + premier slot Gold
+    slots: ["free", "slot_1"] # Slot gratuit + premier slot
   },
   {
     email: "regular@example.com",
@@ -40,10 +46,13 @@ users = [
     maxRarity: "Rare",
     items: ["Initiate Badge", "Encore Badge", "Initiate Showrunner Contract"],
     currencies: {
-      gold: 5000,
-      gems: 50
+      "CASH" => 50_000,
+      "FLEX" => 5_000,
+      "$BFT" => 500,
+      "Sponsor Marks" => 5_000,
+      "Fame Points" => 500
     },
-    slots: ["free", "gold_1", "gold_2"] # Tous les slots Gold débloqués
+    slots: ["free", "slot_1", "slot_2"] # Tous les slots standards débloqués
   },
   {
     email: "collector@example.com",
@@ -55,10 +64,13 @@ users = [
     maxRarity: "Epic",
     items: ["Rookie Badge", "Initiate Badge", "Encore Badge", "Contender Badge"],
     currencies: {
-      gold: 10000,
-      gems: 100
+      "CASH" => 100_000,
+      "FLEX" => 10_000,
+      "$BFT" => 1_000,
+      "Sponsor Marks" => 10_000,
+      "Fame Points" => 1_000
     },
-    slots: ["free", "gold_1", "gold_2", "premium_1"] # Premier slot Premium débloqué
+    slots: ["free", "slot_1", "slot_2", "premium_1"] # Premier slot premium débloqué
   },
   {
     email: "pro@example.com",
@@ -70,10 +82,13 @@ users = [
     maxRarity: "Exalted",
     items: ["Contender Badge", "Champion Showrunner Contract", "Contender Showrunner Contract"],
     currencies: {
-      gold: 25000,
-      gems: 250
+      "CASH" => 250_000,
+      "FLEX" => 25_000,
+      "$BFT" => 2_500,
+      "Sponsor Marks" => 25_000,
+      "Fame Points" => 2_500
     },
-    slots: ["free", "gold_1", "gold_2", "premium_1", "premium_2"] # Tous les slots débloqués
+    slots: ["free", "slot_1", "slot_2", "premium_1", "premium_2"] # Tous les slots débloqués
   },
   {
     email: "whale@example.com",
@@ -85,10 +100,13 @@ users = [
     maxRarity: "Legendary",
     items: ["Contender Badge", "Challenger Showrunner Contract", "Champion Showrunner Contract", "Encore Badge"],
     currencies: {
-      gold: 50000,
-      gems: 500
+      "CASH" => 500_000,
+      "FLEX" => 50_000,
+      "$BFT" => 5_000,
+      "Sponsor Marks" => 50_000,
+      "Fame Points" => 5_000
     },
-    slots: ["free", "gold_1", "gold_2", "premium_1", "premium_2"] # Tous les slots débloqués
+    slots: ["free", "slot_1", "slot_2", "premium_1", "premium_2"] # Tous les slots débloqués
   }
 ]
 
@@ -107,48 +125,26 @@ users.each do |user_data|
   end
 
   # Attribution des currencies à l'utilisateur
-  game = Game.find_by!(name: "Boss Fighters")
-  gold = Currency.find_by!(name: "Gold")
-  gems = Currency.find_by!(name: "Gems")
-
-  # Création des transactions pour les currencies initiales
-  if user_data[:currencies][:gold] > 0
-    Transaction.find_or_create_by!(
-      user: user,
-      payment_method: PaymentMethod.find_or_create_by!(provider: 'system', name: 'Initial Balance'),
-      amount: user_data[:currencies][:gold],
-      currency: 'GOLD',
-      status: 'completed',
-      external_id: "initial_gold_#{user.id}",
-      metadata: { type: 'initial_balance', currency: 'gold' }
-    )
-  end
-
-  if user_data[:currencies][:gems] > 0
-    Transaction.find_or_create_by!(
-      user: user,
-      payment_method: PaymentMethod.find_or_create_by!(provider: 'system', name: 'Initial Balance'),
-      amount: user_data[:currencies][:gems],
-      currency: 'GEMS',
-      status: 'completed',
-      external_id: "initial_gems_#{user.id}",
-      metadata: { type: 'initial_balance', currency: 'gems' }
-    )
+  user_data[:currencies].each do |currency_name, amount|
+    next if amount == 0
+    puts "  - Attribution de #{amount} #{currency_name}"
+    # Ici, nous stockerons simplement les montants dans un modèle UserCurrency ou similaire
+    # à implémenter plus tard selon les besoins
   end
 
   # Attribution des slots à l'utilisateur
   user_data[:slots].each do |slot_type|
     slot = case slot_type
     when "free"
-      Slot.find_by(game: game, unlockPrice: 0)
-    when "gold_1"
-      Slot.find_by(game: game, currency: gold, unlockCurrencyNumber: 1000)
-    when "gold_2"
-      Slot.find_by(game: game, currency: gold, unlockCurrencyNumber: 2500)
+      Slot.find_by(unlockPrice: 0)
+    when "slot_1"
+      Slot.find_by(unlockCurrencyNumber: 5_000)
+    when "slot_2"
+      Slot.find_by(unlockCurrencyNumber: 15_000)
     when "premium_1"
-      Slot.find_by(game: game, currency: gems, unlockCurrencyNumber: 100)
+      Slot.find_by(unlockCurrencyNumber: 500)
     when "premium_2"
-      Slot.find_by(game: game, currency: gems, unlockCurrencyNumber: 250)
+      Slot.find_by(unlockCurrencyNumber: 1_500)
     end
 
     if slot
@@ -162,9 +158,8 @@ users.each do |user_data|
     item = Item.find_by(name: item_name)
     if item
       puts "  - Attribution de l'item: #{item_name}"
-      # Création d'un NFT pour chaque item
-      Nft.find_or_create_by!(owner: user.id, itemId: item.id) do |nft|
-        nft.issueId = Nft.where(itemId: item.id).count + 1
+      Nft.find_or_create_by!(owner: user.id.to_s, itemId: item.id) do |nft|
+        nft.issueId = "#{user.id}-#{item.id}-#{Nft.where(itemId: item.id).count + 1}"
         nft.purchasePrice = item.floorPrice
       end
     else
@@ -172,4 +167,5 @@ users.each do |user_data|
     end
   end
 end
+
 puts "✓ Utilisateurs créés avec succès"
