@@ -69,7 +69,11 @@ Rails.application.routes.draw do
       resources :types, only: [:index, :show]
       resources :games
       resources :user_slots
-      resources :user_recharges, only: [:index, :show, :update]
+      resources :user_recharges, only: [:index, :show, :update] do
+        collection do
+          post 'create'
+        end
+      end
 
       resources :badge_useds
 

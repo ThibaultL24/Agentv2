@@ -1,119 +1,92 @@
 class Api::V1::NftsController < ApplicationController
   def index
     @nfts = Nft.joins(item: [:type, :rarity])
-               .order('created_at DESC')
+
+    # Filtrage par type si spécifié
+    @nfts = @nfts.where(items: { type_id: Type.find_by(name: params[:type]).id }) if params[:type].present?
+
+    # Filtrage par propriétaire si spécifié
+    @nfts = @nfts.where(owner: current_user.id.to_s) if params[:owned].present?
+
+    # Tri par date de création décroissante
+    @nfts = @nfts.order('nfts.created_at DESC')
 
     render json: {
-      nfts: @nfts.map { |nft|
-        {
-          id: nft.id,
-          issueId: nft.issueId,
-          itemId: nft.itemId,
-          name: nft.item.name,
-          type: nft.item.type.as_json(only: [:id, :name]),
-          rarity: nft.item.rarity.as_json(only: [:id, :name, :color]),
-          efficiency: nft.item.efficiency,
-          supply: nft.item.supply,
-          floorPrice: nft.item.floorPrice,
-          purchasePrice: nft.purchasePrice,
-          owner: nft.owner
-        }
-      }
+      nfts: @nfts.map { |nft| nft_json(nft) }
     }
   end
 
   def show
     @nft = Nft.joins(item: [:type, :rarity]).find(params[:id])
-
-    render json: {
-      nft: {
-        id: @nft.id,
-        issueId: @nft.issueId,
-        itemId: @nft.itemId,
-        name: @nft.item.name,
-        type: @nft.item.type.as_json(only: [:id, :name]),
-        rarity: @nft.item.rarity.as_json(only: [:id, :name, :color]),
-        efficiency: @nft.item.efficiency,
-        supply: @nft.item.supply,
-        floorPrice: @nft.item.floorPrice,
-        purchasePrice: @nft.purchasePrice,
-        owner: @nft.owner
-      }
-    }
+    render json: { nft: nft_json(@nft) }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "NFT not found" }, status: :not_found
   end
 
   def create
-    item = Item.find_by(id: nft_params[:itemId])
+    # Vérifier si l'item existe
+    item = Item.joins(:rarity).find_by(id: nft_params[:itemId])
     return render json: { error: "Item not found." }, status: :unprocessable_entity unless item
 
-    # Vérifier si l'ID existe déjà
-    if current_user.nfts.exists?(issueId: nft_params[:issueId])
-      return render json: { error: "You have entered the same Id as an existing NFT in your list, please modify it." }, status: :unprocessable_entity
+    # Vérification de la rareté maximale de l'utilisateur
+    if Rarity.where("name <= ?", current_user.maxRarity).exclude?(item.rarity)
+      return render json: { error: "Item rarity too high for your current level." }, status: :unprocessable_entity
+    end
+
+    # Vérification de l'unicité de l'issueId
+    if Nft.exists?(issueId: nft_params[:issueId])
+      return render json: { error: "This issueId already exists." }, status: :unprocessable_entity
+    end
+
+    # Vérification du supply maximum
+    if Nft.where(itemId: item.id).count >= item.supply
+      return render json: { error: "Maximum supply reached for this item." }, status: :unprocessable_entity
     end
 
     @nft = Nft.new(
       itemId: item.id,
       issueId: nft_params[:issueId],
-      purchasePrice: nft_params[:purchasePrice] || 0.0,
+      purchasePrice: nft_params[:purchasePrice] || item.floorPrice,
       owner: current_user.id.to_s
     )
 
     if @nft.save
-      render json: {
-        nft: {
-          id: @nft.id,
-          issueId: @nft.issueId,
-          itemId: @nft.itemId,
-          name: item.name,
-          type: item.type.as_json(only: [:id, :name]),
-          rarity: item.rarity.as_json(only: [:id, :name, :color]),
-          efficiency: item.efficiency,
-          supply: item.supply,
-          floorPrice: item.floorPrice,
-          purchasePrice: @nft.purchasePrice
-        }
-      }, status: :created
+      render json: { nft: nft_json(@nft) }, status: :created
     else
       render json: { error: @nft.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def update
-    @nft = current_user.nfts.find(params[:id])
+    @nft = Nft.find(params[:id])
+
+    # Vérification de la propriété
+    unless @nft.owner == current_user.id.to_s
+      return render json: { error: "You don't own this NFT" }, status: :forbidden
+    end
 
     if @nft.update(nft_params)
-      nft_json = {
-        id: @nft.id,
-        issueId: @nft.issueId,
-        itemId: @nft.itemId,
-        name: @nft.item.name,
-        type: @nft.item.type.as_json(only: [:id, :name]),
-        rarity: @nft.item.rarity.as_json(only: [:id, :name, :color]),
-        efficiency: @nft.item.efficiency,
-        supply: @nft.item.supply,
-        floorPrice: @nft.item.floorPrice,
-        purchasePrice: @nft.purchasePrice
-      }
-
-      # Utiliser la clé appropriée selon le type de NFT
-      response_key = case @nft.item.type.name
-                     when 'Badge' then :nft_badge
-                     when 'Contract' then :nft_contract
-                     else :nft
-                     end
-
-      render json: { response_key => nft_json }
+      render json: { nft: nft_json(@nft) }
     else
       render json: { error: @nft.errors.full_messages }, status: :unprocessable_entity
     end
   rescue ActiveRecord::RecordNotFound
-    render json: { error: "NFT not found or not accessible" }, status: :not_found
+    render json: { error: "NFT not found" }, status: :not_found
   end
 
   def destroy
     @nft = Nft.find(params[:id])
+
+    # Vérification de la propriété
+    unless @nft.owner == current_user.id.to_s
+      return render json: { error: "You don't own this NFT" }, status: :forbidden
+    end
+
+    # Vérification de l'utilisation dans un match
+    if BadgeUsed.exists?(nftId: @nft.id)
+      return render json: { error: "This NFT is currently in use in a match" }, status: :unprocessable_entity
+    end
+
     @nft.destroy
     render json: { message: "NFT successfully deleted" }, status: :ok
   rescue ActiveRecord::RecordNotFound
@@ -124,5 +97,21 @@ class Api::V1::NftsController < ApplicationController
 
   def nft_params
     params.require(:nft).permit(:itemId, :issueId, :purchasePrice)
+  end
+
+  def nft_json(nft)
+    {
+      id: nft.id,
+      issueId: nft.issueId,
+      itemId: nft.itemId,
+      name: nft.item.name,
+      type: nft.item.type.as_json(only: [:id, :name]),
+      rarity: nft.item.rarity.as_json(only: [:id, :name, :color]),
+      efficiency: nft.item.efficiency,
+      supply: nft.item.supply,
+      floorPrice: nft.item.floorPrice,
+      purchasePrice: nft.purchasePrice,
+      owner: nft.owner
+    }
   end
 end

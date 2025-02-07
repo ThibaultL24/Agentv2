@@ -1,74 +1,99 @@
-class Api::V1::PlayerCyclesController < ApplicationController
+class Api::V1::PlayerCyclesController < Api::V1::BaseController
+  before_action :authenticate_user!
+  before_action :set_cycle, only: [:show, :update, :destroy]
+
   def index
-    @cycles = current_user.player_cycles
-    render json: @cycles
-  end
-
-  def show
-    @cycle = PlayerCycle.find(params[:id])
-    badge_metrics = calculate_cycle_badge_metrics(@cycle)
-
+    @cycles = current_user.player_cycles.includes(:matches)
     render json: {
-      cycle: @cycle,
-      metrics: {
-        total_energy_spent: @cycle.matches.sum(:energyUsed),
-        total_profit: @cycle.matches.sum(:profit),
-        average_profit_per_match: @cycle.matches.average(:profit),
-        badge_performance: badge_metrics
-      }
+      cycles: @cycles.map { |cycle| cycle_json(cycle) }
     }
   end
 
+  def show
+    render json: {
+      cycle: cycle_json(@cycle),
+      metrics: cycle_metrics(@cycle)
+    }
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Cycle not found or not accessible" }, status: :not_found
+  end
+
   def create
-    @cycle = PlayerCycle.new(cycle_params)
+    @cycle = current_user.player_cycles.new(cycle_params)
+
     if @cycle.save
-      render json: @cycle, status: :created
+      render json: { cycle: cycle_json(@cycle) }, status: :created
     else
-      render json: @cycle.errors, status: :unprocessable_entity
+      render json: { error: @cycle.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def update
-    @cycle = PlayerCycle.find(params[:id])
     if @cycle.update(cycle_params)
-      render json: @cycle
+      render json: { cycle: cycle_json(@cycle) }
     else
-      render json: @cycle.errors, status: :unprocessable_entity
+      render json: { error: @cycle.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def destroy
-    @cycle = PlayerCycle.find(params[:id])
     @cycle.destroy
-    head :no_content
+    render json: { message: "Cycle successfully deleted" }, status: :ok
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Cycle not found or not accessible" }, status: :not_found
   end
 
   private
 
-  def calculate_cycle_badge_metrics(cycle)
-    badges_used = cycle.matches.joins(:badge_useds).group('badge_useds.badge_id').count
-
-    badges_used.map do |badge_id, usage_count|
-      badge = Badge.find(badge_id)
-      calculator = MetricsCalculator.new(badge.item)
-      metrics = calculator.calculate_badge_metrics
-
-      {
-        badge_id: badge_id,
-        usage_count: usage_count,
-        efficiency: metrics[:efficiency],
-        total_profit_contribution: cycle.matches
-          .joins(:badge_useds)
-          .where(badge_useds: { badge_id: badge_id })
-          .sum(:profit),
-        metrics: metrics
-      }
-    end
+  def set_cycle
+    @cycle = current_user.player_cycles.find(params[:id])
   end
 
   def cycle_params
     params.require(:player_cycle).permit(
-      :user_id, :target_profit, :energy_budget
+      :playerCycleType,
+      :cycleName,
+      :nbBadge,
+      :minimumBadgeRarity,
+      :startDate,
+      :endDate,
+      :nbDateRepeat
     )
+  end
+
+  def cycle_json(cycle)
+    {
+      id: cycle.id,
+      cycle_type: cycle.playerCycleType,
+      name: cycle.cycleName,
+      badges_count: cycle.nbBadge,
+      minimum_rarity: cycle.minimumBadgeRarity,
+      start_date: cycle.startDate,
+      end_date: cycle.endDate,
+      repeat_count: cycle.nbDateRepeat,
+      created_at: cycle.created_at,
+      updated_at: cycle.updated_at
+    }
+  end
+
+  def cycle_metrics(cycle)
+    matches = cycle.user.matches.where(created_at: cycle.startDate..cycle.endDate)
+
+    {
+      matches_stats: {
+        total_matches: matches.count,
+        total_profit: matches.sum(:profit),
+        average_profit: matches.average(:profit)&.round(2) || 0,
+        total_energy_spent: matches.sum(:energyUsed)
+      },
+      efficiency: {
+        profit_per_energy: matches.sum(:energyUsed) > 0 ? (matches.sum(:profit) / matches.sum(:energyUsed)).round(2) : 0,
+        matches_per_day: matches.group_by_day(:created_at).count.values.max || 0
+      },
+      currency_earned: {
+        total_bft: matches.sum(:totalToken),
+        total_flex: matches.sum(:totalFee)
+      }
+    }
   end
 end

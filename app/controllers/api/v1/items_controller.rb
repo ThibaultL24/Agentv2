@@ -2,49 +2,83 @@ class Api::V1::ItemsController < Api::V1::BaseController
   def index
     @items = Item.includes(:type, :rarity)
 
-    # Permettre le filtrage par type (Badge ou Contract)
+    # Filtrage par type
     @items = @items.where(type_id: Type.find_by(name: params[:type_name]).id) if params[:type_name].present?
 
-    render json: @items.map { |item|
-      item_json(item)
+    # Filtrage par rareté
+    @items = @items.where(rarity_id: Rarity.find_by(name: params[:rarity_name]).id) if params[:rarity_name].present?
+
+    # Filtrage par rareté maximale de l'utilisateur
+    if params[:user_accessible].present? && current_user
+      @items = @items.joins(:rarity)
+                    .where("rarities.name <= ?", current_user.maxRarity)
+    end
+
+    render json: {
+      items: @items.map { |item| item_json(item) }
     }
   end
 
   def show
     @item = Item.includes(:type, :rarity).find(params[:id])
 
-    render json: item_json(@item).merge(
-      market_data: calculate_market_metrics
-    )
+    render json: {
+      item: item_json(@item).merge(
+        market_data: market_data(@item)
+      )
+    }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Item not found" }, status: :not_found
   end
 
   def create
     @item = Item.new(item_params)
+
     if @item.save
-      render json: @item, status: :created
+      render json: { item: item_json(@item) }, status: :created
     else
-      render json: @item.errors, status: :unprocessable_entity
+      render json: { error: @item.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def update
     @item = Item.find(params[:id])
+
     if @item.update(item_params)
-      render json: @item
+      render json: { item: item_json(@item) }
     else
-      render json: @item.errors, status: :unprocessable_entity
+      render json: { error: @item.errors.full_messages }, status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Item not found" }, status: :not_found
   end
 
   def destroy
     @item = Item.find(params[:id])
+
+    # Vérifier si l'item a des NFTs associés
+    if @item.nfts.exists?
+      return render json: { error: "Cannot delete item with existing NFTs" }, status: :unprocessable_entity
+    end
+
     @item.destroy
-    head :no_content
+    render json: { message: "Item successfully deleted" }, status: :ok
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Item not found" }, status: :not_found
   end
 
   private
+
+  def item_params
+    params.require(:item).permit(
+      :name,
+      :efficiency,
+      :supply,
+      :floorPrice,
+      :type_id,
+      :rarity_id
+    )
+  end
 
   def item_json(item)
     {
@@ -59,25 +93,17 @@ class Api::V1::ItemsController < Api::V1::BaseController
     }
   end
 
-  def calculate_market_metrics
+  def market_data(item)
     {
       supply: {
-        total: @item.supply,
-        minted: @item.nfts.count,
-        available: @item.supply - @item.nfts.count
+        total: item.supply,
+        minted: item.nfts.count,
+        available: item.supply - item.nfts.count
       },
       price: {
-        floor: @item.floorPrice,
-        last_sold: @item.nfts.order(created_at: :desc).first&.purchasePrice
+        floor: item.floorPrice,
+        last_sold: item.nfts.order(created_at: :desc).first&.purchasePrice
       }
     }
-  end
-
-  def item_params
-    params.require(:item).permit(
-      :rarity, :type, :name, :efficiency,
-      :nfts, :supply, :floorPrice,
-      :type_id, :rarity_id
-    )
   end
 end

@@ -5,10 +5,7 @@ class Api::V1::CurrenciesController < ApplicationController
   end
 
   def show
-    @currency = Currency.find(params[:id])
-    render json: {
-      currency: @currency,
-      currency_packs: @currency.currency_packs
-    }
+    @currency = Currency.includes(:currency_packs).find(params[:id])
+    render json: @currency.as_json(include: :currency_packs)
   end
 end

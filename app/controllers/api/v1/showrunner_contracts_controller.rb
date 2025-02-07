@@ -1,85 +1,43 @@
 class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
   def index
-    @contracts = Item.joins(:type, :rarity)
-                    .where(types: { name: 'Contract' })
-                    .order('rarities.name ASC')
+    @nfts = Nft.joins(item: [:type, :rarity])
+               .where(items: { type_id: Type.find_by(name: 'Contract').id })
+               .order('rarities.name ASC')
 
-    render json: @contracts.map { |item|
-      {
-        contract: {
-          id: item.id,
-          name: item.name,
-          rarity: item.rarity.as_json(only: [:id, :name, :color]),
-          efficiency: item.efficiency,
-          supply: item.supply,
-          floorPrice: item.floorPrice
-        }
-      }
+    # Filtrer par rareté maximale de l'utilisateur si demandé
+    if params[:user_accessible].present? && current_user
+      @nfts = @nfts.where("rarities.name <= ?", current_user.maxRarity)
+    end
+
+    render json: {
+      contracts: @nfts.map { |nft| nft_json(nft) }
     }
   end
 
   def owned_contracts
     @nfts = Nft.joins(item: [:type, :rarity])
+               .where(items: { type_id: Type.find_by(name: 'Contract').id })
                .where(owner: current_user.id.to_s)
-               .where(types: { name: 'Contract' })
-               .select('DISTINCT ON (items.id) nfts.*')
-               .order('items.id, nfts.created_at DESC')
+               .order('rarities.name ASC')
 
-    render json: @nfts.map { |nft|
-      {
-        nft_contract: {
-          id: nft.id,
-          issueId: nft.issueId,
-          name: nft.item.name,
-          rarity: nft.item.rarity.as_json(only: [:id, :name, :color]),
-          efficiency: nft.item.efficiency,
-          supply: nft.item.supply,
-          floorPrice: nft.item.floorPrice,
-          purchasePrice: nft.purchasePrice
-        }
-      }
+    render json: {
+      contracts: @nfts.map { |nft| nft_json(nft) }
     }
   end
 
   def show
-    @contract = if params[:type] == 'item'
-      Item.joins(:type, :rarity)
-          .where(types: { name: 'Contract' })
-          .find(params[:id])
-    else
-      current_user.nfts
-                 .joins(item: [:type, :rarity])
-                 .where(types: { name: 'Contract' })
-                 .find(params[:id])
-    end
+    @contract = Item.joins(:type, :rarity)
+                   .includes(:item_crafting)  # Important pour les métriques de crafting
+                   .where(types: { name: 'Contract' })
+                   .find(params[:id])
 
-    render json: if params[:type] == 'item'
-      {
-        contract: {
-          id: @contract.id,
-          name: @contract.name,
-          rarity: @contract.rarity.as_json(only: [:id, :name, :color]),
-          efficiency: @contract.efficiency,
-          supply: @contract.supply,
-          floorPrice: @contract.floorPrice
-        }
-      }
-    else
-      {
-        nft_contract: {
-          id: @contract.id,
-          issueId: @contract.issueId,
-          name: @contract.item.name,
-          rarity: @contract.item.rarity.as_json(only: [:id, :name, :color]),
-          efficiency: @contract.item.efficiency,
-          supply: @contract.item.supply,
-          floorPrice: @contract.item.floorPrice,
-          purchasePrice: @contract.purchasePrice
-        }
-      }
-    end
+    render json: {
+      contract: contract_json(@contract).merge(
+        crafting_info: crafting_info(@contract)
+      )
+    }
   rescue ActiveRecord::RecordNotFound
-    render json: { error: "Contract not found or not accessible" }, status: :not_found
+    render json: { error: "Contract not found" }, status: :not_found
   end
 
   def accept
@@ -87,34 +45,75 @@ class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
                    .where(types: { name: 'Contract' })
                    .find(params[:id])
 
+    # Vérifier la rareté maximale de l'utilisateur
+    unless Rarity.where("name <= ?", current_user.maxRarity).include?(@contract.rarity)
+      return render json: { error: "Contract rarity too high for your current level" }, status: :forbidden
+    end
+
     # Vérifier si l'utilisateur a déjà ce contrat
     if current_user.nfts.exists?(itemId: @contract.id)
       return render json: { error: 'Contract already owned' }, status: :unprocessable_entity
     end
 
+    # Créer le NFT
     nft = Nft.new(
       itemId: @contract.id,
-      owner: current_user.id.to_s,
+      issueId: "#{current_user.id}-#{@contract.id}-#{Nft.where(itemId: @contract.id).count + 1}",
       purchasePrice: @contract.floorPrice,
-      issueId: Nft.where(itemId: @contract.id).count + 1
+      owner: current_user.id.to_s
     )
 
     if nft.save
       render json: {
         message: 'Contract accepted successfully',
-        contract: {
-          id: nft.id,
-          name: @contract.name,
-          rarity: @contract.rarity.name,
-          efficiency: @contract.efficiency,
-          purchasePrice: nft.purchasePrice,
-          issueId: nft.issueId
-        }
+        contract: contract_json(@contract)
       }
     else
       render json: { error: 'Cannot accept this contract', details: nft.errors.full_messages }, status: :unprocessable_entity
     end
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Contract not found' }, status: :not_found
+  end
+
+  private
+
+  def nft_json(nft)
+    {
+      id: nft.id,
+      issueId: nft.issueId,
+      itemId: nft.itemId,
+      name: nft.item.name,
+      type: nft.item.type.as_json(only: [:id, :name]),
+      rarity: nft.item.rarity.as_json(only: [:id, :name, :color]),
+      efficiency: nft.item.efficiency,
+      supply: nft.item.supply,
+      floorPrice: nft.item.floorPrice,
+      purchasePrice: nft.purchasePrice,
+      owner: nft.owner
+    }
+  end
+
+  def contract_json(item)
+    {
+      id: item.id,
+      name: item.name,
+      rarity: item.rarity.as_json(only: [:id, :name, :color]),
+      efficiency: item.efficiency,
+      supply: item.supply,
+      floorPrice: item.floorPrice,
+      total_minted: item.nfts.count,
+      available_supply: item.supply - item.nfts.count
+    }
+  end
+
+  def crafting_info(contract)
+    return {} unless contract.item_crafting
+
+    {
+      unit_to_craft: contract.item_crafting.unit_to_craft,
+      flex_cost: contract.item_crafting.flex_craft,
+      sponsor_marks_cost: contract.item_crafting.sponsor_mark_craft,
+      badges_required: contract.item_crafting.nb_lower_badge_to_craft
+    }
   end
 end

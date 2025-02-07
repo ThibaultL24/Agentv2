@@ -1,28 +1,18 @@
-class Api::V1::UserBuildsController < ApplicationController
-  protect_from_forgery with: :null_session
+class Api::V1::UserBuildsController < Api::V1::BaseController
   before_action :authenticate_user!
   before_action :set_build, only: [:show, :update, :destroy]
 
   def index
     @builds = current_user.user_builds
-    render json: @builds.map { |build|
-      {
-        id: build.id,
-        buildName: build.buildName,
-        bonusMultiplier: build.bonusMultiplier,
-        perksMultiplier: build.perksMultiplier
-      }
+    render json: {
+      builds: @builds.map { |build| build_json(build) },
+      total_builds: @builds.count
     }
   end
 
   def show
     render json: {
-      build: {
-        id: @build.id,
-        buildName: @build.buildName,
-        bonusMultiplier: @build.bonusMultiplier,
-        perksMultiplier: @build.perksMultiplier
-      },
+      build: build_json(@build),
       performance: calculate_build_metrics
     }
   rescue ActiveRecord::RecordNotFound
@@ -33,22 +23,15 @@ class Api::V1::UserBuildsController < ApplicationController
     @build = current_user.user_builds.new(build_params)
 
     if build_params[:buildName].blank?
-      return render json: { error: "You have entered an empty build name." }, status: :unprocessable_entity
+      return render json: { error: "Build name cannot be empty" }, status: :unprocessable_entity
     end
 
     if current_user.user_builds.exists?(buildName: build_params[:buildName])
-      return render json: { error: "You have entered the same name as an existing Build in your list, please modify it." }, status: :unprocessable_entity
+      return render json: { error: "Build name already exists" }, status: :unprocessable_entity
     end
 
     if @build.save
-      render json: {
-        build: {
-          id: @build.id,
-          buildName: @build.buildName,
-          bonusMultiplier: @build.bonusMultiplier,
-          perksMultiplier: @build.perksMultiplier
-        }
-      }, status: :created
+      render json: { build: build_json(@build) }, status: :created
     else
       render json: { error: @build.errors.full_messages }, status: :unprocessable_entity
     end
@@ -56,14 +39,7 @@ class Api::V1::UserBuildsController < ApplicationController
 
   def update
     if @build.update(build_params)
-      render json: {
-        build: {
-          id: @build.id,
-          buildName: @build.buildName,
-          bonusMultiplier: @build.bonusMultiplier,
-          perksMultiplier: @build.perksMultiplier
-        }
-      }
+      render json: { build: build_json(@build) }
     else
       render json: { error: @build.errors.full_messages }, status: :unprocessable_entity
     end
@@ -84,6 +60,17 @@ class Api::V1::UserBuildsController < ApplicationController
     @build = current_user.user_builds.find(params[:id])
   end
 
+  def build_json(build)
+    {
+      id: build.id,
+      buildName: build.buildName,
+      bonusMultiplier: build.bonusMultiplier,
+      perksMultiplier: build.perksMultiplier,
+      created_at: build.created_at,
+      updated_at: build.updated_at
+    }
+  end
+
   def calculate_build_metrics
     matches = Match.where(build: @build.buildName).last(10)
     return {} if matches.empty?
@@ -92,11 +79,13 @@ class Api::V1::UserBuildsController < ApplicationController
       recent_performance: {
         average_profit: matches.sum(&:profit) / matches.size,
         total_bft: matches.sum(&:totalToken),
-        total_flex: matches.sum(&:totalFee)
+        total_flex: matches.sum(&:totalFee),
+        matches_count: matches.size
       },
       multipliers: {
         bonus: @build.bonusMultiplier,
-        perks: @build.perksMultiplier
+        perks: @build.perksMultiplier,
+        total: (@build.bonusMultiplier || 1.0) * (@build.perksMultiplier || 1.0)
       }
     }
   end

@@ -1,5 +1,4 @@
-class Api::V1::UserRechargesController < ApplicationController
-  protect_from_forgery with: :null_session
+class Api::V1::UserRechargesController < Api::V1::BaseController
   before_action :authenticate_user!
   before_action :set_recharge, only: [:show, :update]
 
@@ -8,41 +7,37 @@ class Api::V1::UserRechargesController < ApplicationController
   def index
     @recharges = current_user.user_recharges
     render json: {
-      recharges: @recharges.map { |recharge|
-        {
-          id: recharge.id,
-          discountTime: recharge.discountTime,
-          discountNumber: recharge.discountNumber,
-          description: get_discount_description(recharge.discountTime)
-        }
-      },
-      total_discounts: @recharges.sum(&:discountNumber)
+      recharges: @recharges.map { |recharge| recharge_json(recharge) },
+      total_discounts: current_user.user_recharges.sum(:discountNumber),
+      stats: {
+        active_discounts: current_user.user_recharges.where('"discountNumber" > 0').count,
+        total_discount_time: current_user.user_recharges.sum('("discountTime" * "discountNumber")')
+      }
     }
   end
 
   def show
     render json: {
-      recharge: {
-        id: @recharge.id,
-        discountTime: @recharge.discountTime,
-        discountNumber: @recharge.discountNumber,
-        description: get_discount_description(@recharge.discountTime)
-      }
+      recharge: recharge_json(@recharge),
+      usage_stats: calculate_usage_stats
     }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Recharge discount not found or not accessible" }, status: :not_found
   end
 
+  def create
+    @recharge = current_user.user_recharges.new(recharge_params)
+
+    if @recharge.save
+      render json: { recharge: recharge_json(@recharge) }, status: :created
+    else
+      render json: { error: @recharge.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def update
     if @recharge.update(recharge_params)
-      render json: {
-        recharge: {
-          id: @recharge.id,
-          discountTime: @recharge.discountTime,
-          discountNumber: @recharge.discountNumber,
-          description: get_discount_description(@recharge.discountTime)
-        }
-      }
+      render json: { recharge: recharge_json(@recharge) }
     else
       render json: { error: @recharge.errors.full_messages }, status: :unprocessable_entity
     end
@@ -57,7 +52,27 @@ class Api::V1::UserRechargesController < ApplicationController
   end
 
   def recharge_params
-    params.require(:user_recharge).permit(:discountNumber)
+    params.require(:user_recharge).permit(:discountNumber, :discountTime)
+  end
+
+  def recharge_json(recharge)
+    {
+      id: recharge.id,
+      discountTime: recharge.discountTime,
+      discountNumber: recharge.discountNumber,
+      description: get_discount_description(recharge.discountTime),
+      total_discount_time: recharge.discountTime * recharge.discountNumber,
+      created_at: recharge.created_at,
+      updated_at: recharge.updated_at
+    }
+  end
+
+  def calculate_usage_stats
+    {
+      total_uses: @recharge.discountNumber,
+      remaining_uses: [@recharge.discountNumber, 0].max,
+      total_time_saved: @recharge.discountTime * @recharge.discountNumber
+    }
   end
 
   def get_discount_description(discount_time)

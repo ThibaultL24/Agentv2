@@ -1,37 +1,53 @@
-class Api::V1::ItemCraftingController < ApplicationController
+class Api::V1::ItemCraftingController < Api::V1::BaseController
+  before_action :authenticate_user!
+
   def index
-    @item_craftings = ItemCrafting.includes(:item)
-    render json: @item_craftings
+    @item_craftings = ItemCrafting.includes(item: [:type, :rarity])
+                                 .where(items: { types: { name: ['Badge', 'Contract'] }})
+
+    render json: {
+      craftings: @item_craftings.map { |crafting| crafting_json(crafting) }
+    }
   end
 
   def show
-    @item_crafting = ItemCrafting.find(params[:id])
+    @item_crafting = ItemCrafting.includes(item: [:type, :rarity]).find(params[:id])
     calculator = MetricsCalculator.new(@item_crafting.item)
     metrics = calculator.calculate_badge_metrics
 
     render json: {
-      crafting_data: @item_crafting,
-      metrics: {
-        craft_time: metrics[:craft_time],
-        flex_craft_cost: metrics[:flex_craft_cost],
-        sponsor_marks_cost: metrics[:sponsor_marks_cost],
-        total_craft_cost_usd: metrics[:total_craft_cost_usd]
-      }
+      crafting: crafting_json(@item_crafting),
+      metrics: crafting_metrics(metrics)
     }
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Crafting data not found" }, status: :not_found
   end
 
   private
 
-  def calculate_crafting_metrics
+  def crafting_json(crafting)
     {
-      crafting_cost: calculate_total_crafting_cost,
-      units_per_craft: @item_crafting.unitToCraft,
-      efficiency_ratio: @item_crafting.unitToCraft / @item_crafting.nbLowerBadgeToCraft
+      id: crafting.id,
+      item: {
+        id: crafting.item.id,
+        name: crafting.item.name,
+        type: crafting.item.type.name,
+        rarity: crafting.item.rarity.name
+      },
+      unit_to_craft: crafting.unit_to_craft,
+      flex_craft: crafting.flex_craft,
+      sponsor_mark_craft: crafting.sponsor_mark_craft,
+      nb_lower_badge_to_craft: crafting.nb_lower_badge_to_craft
     }
   end
 
-  def calculate_total_crafting_cost
-    base_cost = @item_crafting.nbLowerBadgeToCraft * @item_crafting.item.base_badge_cost
-    base_cost + @item_crafting.additional_costs
+  def crafting_metrics(metrics)
+    {
+      craft_time: metrics[:craft_time],
+      flex_craft_cost: metrics[:flex_craft_cost],
+      sponsor_marks_cost: metrics[:sponsor_marks_cost],
+      total_craft_cost_usd: metrics[:total_craft_cost_usd],
+      estimated_roi_days: metrics[:roi_days]
+    }
   end
 end
