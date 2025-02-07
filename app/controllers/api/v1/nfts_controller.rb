@@ -1,6 +1,6 @@
 class Api::V1::NftsController < ApplicationController
   def index
-    @nfts = Nft.joins(item: [:type, :rarity])
+    @nfts = Nft.joins(item: [ :type, :rarity ])
 
     # Filtrage par type si spécifié
     @nfts = @nfts.where(items: { type_id: Type.find_by(name: params[:type]).id }) if params[:type].present?
@@ -9,7 +9,7 @@ class Api::V1::NftsController < ApplicationController
     @nfts = @nfts.where(owner: current_user.id.to_s) if params[:owned].present?
 
     # Tri par date de création décroissante
-    @nfts = @nfts.order('nfts.created_at DESC')
+    @nfts = @nfts.order("nfts.created_at DESC")
 
     render json: {
       nfts: @nfts.map { |nft| nft_json(nft) }
@@ -17,7 +17,7 @@ class Api::V1::NftsController < ApplicationController
   end
 
   def show
-    @nft = Nft.joins(item: [:type, :rarity]).find(params[:id])
+    @nft = Nft.joins(item: [ :type, :rarity ]).find(params[:id])
     render json: { nft: nft_json(@nft) }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "NFT not found" }, status: :not_found
@@ -27,21 +27,6 @@ class Api::V1::NftsController < ApplicationController
     # Vérifier si l'item existe
     item = Item.joins(:rarity).find_by(id: nft_params[:itemId])
     return render json: { error: "Item not found." }, status: :unprocessable_entity unless item
-
-    # Vérification de la rareté maximale de l'utilisateur
-    if Rarity.where("name <= ?", current_user.maxRarity).exclude?(item.rarity)
-      return render json: { error: "Item rarity too high for your current level." }, status: :unprocessable_entity
-    end
-
-    # Vérification de l'unicité de l'issueId
-    if Nft.exists?(issueId: nft_params[:issueId])
-      return render json: { error: "This issueId already exists." }, status: :unprocessable_entity
-    end
-
-    # Vérification du supply maximum
-    if Nft.where(itemId: item.id).count >= item.supply
-      return render json: { error: "Maximum supply reached for this item." }, status: :unprocessable_entity
-    end
 
     @nft = Nft.new(
       itemId: item.id,
@@ -105,8 +90,8 @@ class Api::V1::NftsController < ApplicationController
       issueId: nft.issueId,
       itemId: nft.itemId,
       name: nft.item.name,
-      type: nft.item.type.as_json(only: [:id, :name]),
-      rarity: nft.item.rarity.as_json(only: [:id, :name, :color]),
+      type: nft.item.type.as_json(only: [ :id, :name ]),
+      rarity: nft.item.rarity.as_json(only: [ :id, :name, :color ]),
       efficiency: nft.item.efficiency,
       supply: nft.item.supply,
       floorPrice: nft.item.floorPrice,
