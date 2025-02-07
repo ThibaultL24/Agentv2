@@ -3,7 +3,7 @@ class Api::V1::PlayerCyclesController < Api::V1::BaseController
   before_action :set_cycle, only: [:show, :update, :destroy]
 
   def index
-    @cycles = current_user.player_cycles.includes(:matches)
+    @cycles = current_user.player_cycles
     render json: {
       cycles: @cycles.map { |cycle| cycle_json(cycle) }
     }
@@ -11,8 +11,7 @@ class Api::V1::PlayerCyclesController < Api::V1::BaseController
 
   def show
     render json: {
-      cycle: cycle_json(@cycle),
-      metrics: cycle_metrics(@cycle)
+      cycle: cycle_json(@cycle)
     }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Cycle not found or not accessible" }, status: :not_found
