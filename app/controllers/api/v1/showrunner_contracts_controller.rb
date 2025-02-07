@@ -1,16 +1,11 @@
 class Api::V1::ShowrunnerContractsController < Api::V1::BaseController
   def index
-    @nfts = Nft.joins(item: [:type, :rarity])
-               .where(items: { type_id: Type.find_by(name: 'Contract').id })
-               .order('rarities.name ASC')
-
-    # Filtrer par rareté maximale de l'utilisateur si demandé
-    if params[:user_accessible].present? && current_user
-      @nfts = @nfts.where("rarities.name <= ?", current_user.maxRarity)
-    end
+    @items = Item.joins(:type, :rarity)
+                 .where(types: { name: 'Contract' })
+                 .order('rarities.name ASC')
 
     render json: {
-      contracts: @nfts.map { |nft| nft_json(nft) }
+      contracts: @items.map { |item| contract_json(item) }
     }
   end
 

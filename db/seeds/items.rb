@@ -7,7 +7,7 @@ items = [
     name: "Rookie Badge",
     type_name: "Badge",
     rarity_name: "Common",
-    efficiency: 0.1,
+    efficiency: 1.0,
     supply: 200_000,
     floorPrice: 7.98,
     farming: { ratio: 1.0, in_game_time: 600 }
@@ -16,28 +16,37 @@ items = [
     name: "Initiate Badge",
     type_name: "Badge",
     rarity_name: "Uncommon",
-    efficiency: 0.205,
+    efficiency: 2.05,
     supply: 100_000,
-    floorPrice: 26.00,
-    farming: { ratio: 1.0, in_game_time: 600 }
+    floorPrice: 34.00,
+    farming: { ratio: 2.05, in_game_time: 600 }
   },
   {
     name: "Encore Badge",
     type_name: "Badge",
     rarity_name: "Rare",
-    efficiency: 0.5,
+    efficiency: 4.20,
     supply: 50_000,
-    floorPrice: 119.00,
-    farming: { ratio: 1.0, in_game_time: 600 }
+    floorPrice: 95.00,
+    farming: { ratio: 2.15, in_game_time: 600 }
   },
   {
     name: "Contender Badge",
     type_name: "Badge",
     rarity_name: "Epic",
-    efficiency: 1.292,
+    efficiency: 12.92,
     supply: 25_000,
-    floorPrice: 404.00,
-    farming: { ratio: 1.0, in_game_time: 600 }
+    floorPrice: 409.00,
+    farming: { ratio: 8.72, in_game_time: 600 }
+  },
+  {
+    name: "Challenger Badge",
+    type_name: "Badge",
+    rarity_name: "Legendary",
+    efficiency: 39.74,
+    supply: 10_000,
+    floorPrice: 2_900.00,
+    farming: { ratio: 26.82, in_game_time: 600 }
   },
 
   # Contracts
@@ -45,55 +54,55 @@ items = [
     name: "Rookie Showrunner Contract",
     type_name: "Contract",
     rarity_name: "Common",
-    efficiency: 0.1,
+    efficiency: 1.0,
     supply: 50_000,
-    floorPrice: 32.30,
+    floorPrice: 23.00,
     farming: { ratio: 1.0, in_game_time: 600 }
   },
   {
     name: "Initiate Showrunner Contract",
     type_name: "Contract",
     rarity_name: "Uncommon",
-    efficiency: 0.205,
+    efficiency: 2.05,
     supply: 35_000,
-    floorPrice: 51.00,
-    farming: { ratio: 1.0, in_game_time: 600 }
+    floorPrice: 40.99,
+    farming: { ratio: 2.05, in_game_time: 600 }
   },
   {
     name: "Encore Showrunner Contract",
     type_name: "Contract",
     rarity_name: "Rare",
-    efficiency: 0.5,
+    efficiency: 4.20,
     supply: 20_000,
-    floorPrice: 129.00,
-    farming: { ratio: 1.0, in_game_time: 600 }
+    floorPrice: 91.90,
+    farming: { ratio: 2.15, in_game_time: 600 }
   },
   {
     name: "Contender Showrunner Contract",
     type_name: "Contract",
     rarity_name: "Epic",
-    efficiency: 1.292,
+    efficiency: 12.92,
     supply: 10_000,
-    floorPrice: 324.00,
-    farming: { ratio: 1.0, in_game_time: 600 }
+    floorPrice: 295.00,
+    farming: { ratio: 8.72, in_game_time: 600 }
   },
   {
     name: "Champion Showrunner Contract",
     type_name: "Contract",
     rarity_name: "Exalted",
-    efficiency: 2.5,
+    efficiency: 39.74,
     supply: 1_000,
-    floorPrice: 4_500.00,
-    farming: { ratio: 1.0, in_game_time: 600 }
+    floorPrice: 100_000.00,
+    farming: { ratio: 26.82, in_game_time: 600 }
   },
   {
     name: "Challenger Showrunner Contract",
     type_name: "Contract",
     rarity_name: "Legendary",
-    efficiency: 5.0,
+    efficiency: 39.74,
     supply: 5_000,
-    floorPrice: 498.00,
-    farming: { ratio: 1.0, in_game_time: 600 }
+    floorPrice: 398.00,
+    farming: { ratio: 26.82, in_game_time: 600 }
   }
 ]
 

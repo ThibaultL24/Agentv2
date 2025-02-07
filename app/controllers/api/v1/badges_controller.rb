@@ -1,16 +1,11 @@
 class Api::V1::BadgesController < Api::V1::BaseController
   def index
-    @nfts = Nft.joins(item: [:type, :rarity])
-               .where(items: { type_id: Type.find_by(name: 'Badge').id })
-               .order('rarities.name ASC')
-
-    # Filtrer par rareté maximale de l'utilisateur si demandé
-    if params[:user_accessible].present? && current_user
-      @nfts = @nfts.where("rarities.name <= ?", current_user.maxRarity)
-    end
+    @items = Item.joins(:type, :rarity)
+                 .where(types: { name: 'Badge' })
+                 .order('rarities.name ASC')
 
     render json: {
-      badges: @nfts.map { |nft| nft_json(nft) }
+      badges: @items.map { |item| badge_json(item) }
     }
   end
 
