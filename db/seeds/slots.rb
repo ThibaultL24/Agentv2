@@ -1,57 +1,53 @@
 puts "- Création des slots de BADGEs"
 
 game = Game.find_by!(name: "Boss Fighters")
-cash = Currency.find_by!(name: "CASH")
 flex = Currency.find_by!(name: "FLEX")
 
 # Définition des slots avec leurs caractéristiques
 slots = [
   # Slot de base gratuit (toujours débloqué)
   {
-    currency: cash,
+    currency: flex,
     game: game,
-    unlockCurrencyNumber: 0,
-    unlockPrice: 0,
     unlocked: true,
-    totalCost: 0
+    unlockCurrencyNumber: 0,
+    unlockPrice: 0
   },
-  # Slots standards (accessibles avec CASH)
-  {
-    currency: cash,
-    game: game,
-    unlockCurrencyNumber: 5_000,
-    unlockPrice: 4.99,
-    unlocked: false,
-    totalCost: 4.99
-  },
-  {
-    currency: cash,
-    game: game,
-    unlockCurrencyNumber: 15_000,
-    unlockPrice: 12.99,
-    unlocked: false,
-    totalCost: 12.99
-  },
-  # Slots Premium (nécessitent du FLEX)
+  # Premier slot payant
   {
     currency: flex,
     game: game,
-    unlockCurrencyNumber: 500,
-    unlockPrice: 4.99,
     unlocked: false,
-    totalCost: 4.99
+    unlockCurrencyNumber: 7_000,
+    unlockPrice: 51.98
   },
+  # Deuxième slot
   {
     currency: flex,
     game: game,
-    unlockCurrencyNumber: 1_500,
-    unlockPrice: 12.99,
     unlocked: false,
-    totalCost: 12.99
+    unlockCurrencyNumber: 20_000,
+    unlockPrice: 148.52
+  },
+  # Troisième slot
+  {
+    currency: flex,
+    game: game,
+    unlocked: false,
+    unlockCurrencyNumber: 40_000,
+    unlockPrice: 297.04
+  },
+  # Quatrième slot
+  {
+    currency: flex,
+    game: game,
+    unlocked: false,
+    unlockCurrencyNumber: 66_000,
+    unlockPrice: 490.11
   }
 ]
 
-puts "  - Création de #{slots.length} slots (1 gratuit, 2 standards, 2 premium)"
+puts "  - Création de #{slots.length} slots (1 gratuit, 4 payants)"
 
 # Création des slots
 slots.each do |slot_data|

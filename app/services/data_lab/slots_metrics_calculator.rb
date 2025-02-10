@@ -6,9 +6,12 @@ module DataLab
 
     def calculate
       slots = Slot.includes(:currency, :game)
+      slots_costs = calculate_slots_cost(slots)
       {
-        slots_cost: calculate_slots_cost(slots),
-        unlocked_slots: calculate_unlocked_slots(@user.user_slots)
+        slots_cost: slots_costs,
+        unlocked_slots: calculate_unlocked_slots(@user.user_slots).merge(
+          total_cost: format_currency(slots.sum(:unlockPrice))
+        )
       }
     end
 
@@ -18,8 +21,11 @@ module DataLab
       slots.map do |slot|
         {
           slot: slot.id,
-          nb_flex: slot.unlockCurrencyNumber,
-          flex_cost: format_currency(slot.unlockPrice),
+          cost: {
+            amount: slot.unlockCurrencyNumber,
+            currency: slot.currency.name,
+            price_usd: format_currency(slot.unlockPrice)
+          },
           bonus_sbft_per_slot: calculate_bonus_sbft_percentage(slot),
           normal_part_sbft_badge: 14,
           bonus_part_sbft_badge: calculate_bonus_part_sbft(slot)
@@ -28,15 +34,54 @@ module DataLab
     end
 
     def calculate_unlocked_slots(user_slots)
+      return empty_totals if user_slots.empty?
+
+      # Log initial user slots information
+      Rails.logger.info "==== Calculating Unlocked Slots ===="
+      Rails.logger.info "User slots count: #{user_slots.count}"
+      Rails.logger.info "User slots details: #{user_slots.inspect}"
+
+      unlocked_slot_ids = user_slots.pluck(:slot_id)
+      Rails.logger.info "Unlocked slot IDs: #{unlocked_slot_ids.inspect}"
+
+      # Récupérer tous les slots
+      all_slots = Slot.all
+      Rails.logger.info "All available slots: #{all_slots.map { |s| { id: s.id, flex: s.unlockCurrencyNumber, price: s.unlockPrice } }.inspect}"
+
+      # Récupérer les slots débloqués
+      slots = Slot.where(id: unlocked_slot_ids)
+      Rails.logger.info "Found unlocked slots: #{slots.map { |s| { id: s.id, flex: s.unlockCurrencyNumber, price: s.unlockPrice } }.inspect}"
+
+      # Calculer les totaux avec plus de détails
+      total_flex = slots.sum(:unlockCurrencyNumber)
+      total_cost = slots.sum(:unlockPrice)
+      Rails.logger.info "Individual slot costs: #{slots.map { |s| [s.id, s.unlockPrice] }.inspect}"
+      Rails.logger.info "Calculated totals: flex=#{total_flex}, raw_cost=#{total_cost}, formatted_cost=#{format_currency(total_cost)}"
+      Rails.logger.info "==== End Calculation ===="
+
       {
-        total_flex: calculate_total_flex(user_slots),
-        total_cost: format_currency(calculate_total_cost(user_slots)),
+        total_flex: total_flex,
+        total_cost: format_currency(total_cost),
         total_bonus_sbft: calculate_total_bonus_percentage(user_slots),
-        nb_tokens_roi: calculate_tokens_roi(user_slots),
+        nb_tokens_roi: (total_cost * 100).to_i,
         charges_roi: {
           multiplier_1: calculate_charges_roi(user_slots, 1.0),
           multiplier_2: calculate_charges_roi(user_slots, 2.0),
           multiplier_3: calculate_charges_roi(user_slots, 3.0)
+        }
+      }
+    end
+
+    def empty_totals
+      {
+        total_flex: 0,
+        total_cost: format_currency(0),
+        total_bonus_sbft: 0,
+        nb_tokens_roi: 0,
+        charges_roi: {
+          multiplier_1: 0,
+          multiplier_2: 0,
+          multiplier_3: 0
         }
       }
     end
@@ -61,28 +106,6 @@ module DataLab
       end
     end
 
-    def calculate_total_flex(user_slots)
-      case user_slots.count
-      when 1 then 7_000
-      when 2 then 20_000
-      when 3 then 40_000
-      when 4 then 66_000
-      when 5 then 100_000
-      else 0
-      end
-    end
-
-    def calculate_total_cost(user_slots)
-      case user_slots.count
-      when 1 then 51.98
-      when 2 then 148.52
-      when 3 then 297.04
-      when 4 then 490.11
-      when 5 then 750.00
-      else 0
-      end
-    end
-
     def calculate_total_bonus_percentage(user_slots)
       case user_slots.count
       when 1 then 1.0
@@ -90,17 +113,6 @@ module DataLab
       when 3 then 12.0
       when 4 then 25.0
       when 5 then 40.0
-      else 0
-      end
-    end
-
-    def calculate_tokens_roi(user_slots)
-      case user_slots.count
-      when 1 then 5_198
-      when 2 then 14_852
-      when 3 then 29_704
-      when 4 then 49_011
-      when 5 then 75_000
       else 0
       end
     end
