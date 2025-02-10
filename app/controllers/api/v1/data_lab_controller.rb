@@ -9,4 +9,12 @@ class Api::V1::DataLabController < ApplicationController
 
     render json: response
   end
+
+  def contracts_metrics
+    response = Rails.cache.fetch("data_lab/contracts/#{current_user.id}", expires_in: 1.hour) do
+      DataLab::ContractsMetricsCalculator.new(current_user).calculate
+    end
+
+    render json: response
+  end
 end

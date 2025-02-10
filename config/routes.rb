@@ -71,6 +71,7 @@ Rails.application.routes.draw do
       resources :badge_useds
 
       get 'data_lab/slots', to: 'data_lab#slots_metrics'
+      get 'data_lab/contracts', to: 'data_lab#contracts_metrics'
 
       get 'profile', to: 'users#profile'
       patch 'profile', to: 'users#update_profile'
