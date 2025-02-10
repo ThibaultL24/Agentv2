@@ -1,10 +1,10 @@
 class Web3Service
   class << self
-    def verify_transaction(tx_hash, network = 'ethereum')
+    def verify_transaction(tx_hash, network = "ethereum")
       case network
-      when 'ethereum'
+      when "ethereum"
         verify_eth_transaction(tx_hash)
-      when 'bsc'
+      when "bsc"
         verify_bsc_transaction(tx_hash)
       else
         raise "Réseau non supporté"
@@ -16,13 +16,13 @@ class Web3Service
     def verify_eth_transaction(tx_hash)
       # TODO: Implémenter la vérification réelle avec Web3
       # Pour le test, on simule une confirmation
-      return "confirmed"
+      "confirmed"
     end
 
     def verify_bsc_transaction(tx_hash)
       # TODO: Implémenter la vérification réelle avec Web3
       # Pour le test, on simule une confirmation
-      return "confirmed"
+      "confirmed"
     end
   end
 end

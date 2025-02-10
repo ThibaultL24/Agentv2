@@ -1,7 +1,7 @@
 class MetricsCalculator
   # Métriques de base par rareté
   BASE_METRICS = {
-    'Common' => {
+    "Common" => {
       efficiency: 1.00,
       ratio: 1.00,
       charges: 1,
@@ -15,7 +15,7 @@ class MetricsCalculator
       sponsor_marks: 0,
       recharge_time: 48  # heures
     },
-    'Uncommon' => {
+    "Uncommon" => {
       efficiency: 2.05,
       ratio: 2.05,
       charges: 2,
@@ -29,7 +29,7 @@ class MetricsCalculator
       sponsor_marks: 2430,
       recharge_time: 48
     },
-    'Rare' => {
+    "Rare" => {
       efficiency: 4.20,
       ratio: 2.15,
       charges: 3,
@@ -43,7 +43,7 @@ class MetricsCalculator
       sponsor_marks: 4053,
       recharge_time: 48
     },
-    'Epic' => {
+    "Epic" => {
       efficiency: 12.92,
       ratio: 8.72,
       charges: 4,
@@ -57,7 +57,7 @@ class MetricsCalculator
       sponsor_marks: 10142,
       recharge_time: 48
     },
-    'Legendary' => {
+    "Legendary" => {
       efficiency: 39.74,
       ratio: 26.82,
       charges: 5,
@@ -71,7 +71,7 @@ class MetricsCalculator
       sponsor_marks: 16919,
       recharge_time: 48
     },
-    'Mythic' => {
+    "Mythic" => {
       efficiency: 122.19,
       ratio: 82.45,
       charges: 6,
@@ -89,32 +89,32 @@ class MetricsCalculator
 
   # Coûts de recharge par rareté (en FLEX)
   RECHARGE_COSTS = {
-    'Common' => {
+    "Common" => {
       single: 500,
       full: 500,
       sponsor_marks_required: 150
     },
-    'Uncommon' => {
+    "Uncommon" => {
       single: 1400,
       full: 2800,
       sponsor_marks_required: 350
     },
-    'Rare' => {
+    "Rare" => {
       single: 3300,
       full: 9900,
       sponsor_marks_required: 876
     },
-    'Epic' => {
+    "Epic" => {
       single: 1600,
       full: 6400,
       sponsor_marks_required: 1948
     },
-    'Legendary' => {
+    "Legendary" => {
       single: 12000,
       full: 60000,
       sponsor_marks_required: 4065
     },
-    'Mythic' => {
+    "Mythic" => {
       single: 23500,
       full: 141000,
       sponsor_marks_required: 8400
@@ -130,13 +130,13 @@ class MetricsCalculator
     @user = user
     @metrics = if @item.respond_to?(:rarity)
                 BASE_METRICS[@item.rarity.name]
-              else
+    else
                 {}
-              end
+    end
   end
 
   def calculate_badge_metrics
-    return unless @item.type.name == 'Badge'
+    return unless @item.type.name == "Badge"
     {
       # Métriques de base
       rarity: @item.rarity.name,
@@ -200,7 +200,7 @@ class MetricsCalculator
     return {} unless @item.is_a?(PlayerCycle)
 
     matches = Match.where(user_id: @item.user_id)
-                  .where('date >= ? AND date <= ?', @item.startDate, @item.endDate)
+                  .where("date >= ? AND date <= ?", @item.startDate, @item.endDate)
 
     total_matches = matches.count
     total_profit = matches.sum(:profit)
@@ -266,11 +266,11 @@ class MetricsCalculator
   def calculate_contract_progress
     return unless @user
     matches = @user.matches
-                  .where('created_at >= ?', 24.hours.ago)
+                  .where("created_at >= ?", 24.hours.ago)
                   .where(game_id: @item.game_id)
 
     total_matches = matches.count
-    won_matches = matches.where(result: 'win').count
+    won_matches = matches.where(result: "win").count
     win_rate = total_matches > 0 ? (won_matches.to_f / total_matches * 100).round(2) : 0
 
     {
@@ -285,9 +285,9 @@ class MetricsCalculator
   def calculate_completion_percentage(total_matches, win_rate)
     return 0 if total_matches == 0
 
-    matches_percentage = [total_matches.to_f / (@item.item_farming&.in_game_time || 10) * 100, 100].min
-    win_rate_percentage = [win_rate / @item.efficiency * 100, 100].min
+    matches_percentage = [ total_matches.to_f / (@item.item_farming&.in_game_time || 10) * 100, 100 ].min
+    win_rate_percentage = [ win_rate / @item.efficiency * 100, 100 ].min
 
-    [(matches_percentage + win_rate_percentage) / 2, 100].min
+    [ (matches_percentage + win_rate_percentage) / 2, 100 ].min
   end
 end

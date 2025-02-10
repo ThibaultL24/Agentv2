@@ -23,4 +23,5 @@ seed_files.each do |file|
   puts "\nSeeding #{file}..."
   load Rails.root.join('db', 'seeds', file)
 end
+
 puts "\n✓ Seeding completed successfully! 🌱"
