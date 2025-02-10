@@ -72,6 +72,7 @@ Rails.application.routes.draw do
 
       get 'data_lab/slots', to: 'data_lab#slots_metrics'
       get 'data_lab/contracts', to: 'data_lab#contracts_metrics'
+      get 'data_lab/badges', to: 'data_lab#badges_metrics'
 
       get 'profile', to: 'users#profile'
       patch 'profile', to: 'users#update_profile'

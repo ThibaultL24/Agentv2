@@ -30,7 +30,7 @@ module DataLab
           lvl_max: calculate_max_level(contract),
           max_energy_recharge: calculate_max_energy(contract),
           time_to_craft: format_hours(get_craft_time(contract)),
-          nb_badges_rarity_minus_one: contract.item_crafting&.nb_lower_badge_to_craft || 0,
+          nb_badges_required_for_craft: contract.item_crafting&.nb_lower_badge_to_craft || 0,
           flex_craft: calculate_flex_craft(contract),
           sp_marks_craft: calculate_sp_marks_craft(contract),
           time_to_charge: format_time_to_charge(contract),
@@ -52,18 +52,9 @@ module DataLab
     end
 
     def calculate_max_level(contract)
-      case contract.rarity.name
-      when "Common" then 10
-      when "Uncommon" then 20
-      when "Rare" then 30
-      when "Epic" then 40
-      when "Legendary" then 50
-      when "Mythic" then 60
-      when "Exalted" then 70
-      when "Exotic" then 80
-      when "Transcendent" then 90
-      when "Unique" then 100
-      end
+      rarity_index = RARITY_ORDER.index(contract.rarity.name)
+      return 0 if rarity_index.nil?
+      (rarity_index + 1) * 10
     end
 
     def calculate_max_energy(contract)
@@ -102,52 +93,32 @@ module DataLab
     end
 
     def calculate_flex_charge(contract)
-      case contract.rarity.name
-      when "Common" then 130
-      when "Uncommon" then 440
-      when "Rare" then 1_662
-      when "Epic" then 5_852
-      when "Legendary" then 19_665
-      when "Mythic" then 57_948
-      else "???"
-      end
+      base_flex_cost = 130  # Coût de base pour Common
+      rarity_multiplier = get_rarity_multiplier(contract.rarity.name)
+      (base_flex_cost * rarity_multiplier).round(0)
     end
 
     def calculate_sp_marks_charge(contract)
-      case contract.rarity.name
-      when "Common" then 290
-      when "Uncommon" then 960
-      when "Rare" then 2_943
-      when "Epic" then 10_340
-      when "Legendary" then 34_770
-      when "Mythic" then 300_642
-      else "???"
-      end
+      flex_cost = calculate_flex_charge(contract)
+      return "???" if flex_cost == "???"
+      (flex_cost * 2.23).round(0)  # Ratio moyen Sponsor Marks/FLEX
     end
 
     def calculate_sp_marks_craft(contract)
-      case contract.rarity.name
-      when "Common" then 0
-      when "Uncommon" then 2_400
-      when "Rare" then 4_100
-      when "Epic" then 10_927
-      when "Legendary" then 21_700
-      when "Mythic" then 60_500
-      when "Exalted" then 219_946
-      else "???"
-      end
+      base_marks = 2400  # Coût de base pour Uncommon
+      return 0 if contract.rarity.name == "Common"
+
+      rarity_multiplier = get_rarity_multiplier(contract.rarity.name)
+      badges_required = contract.item_crafting&.nb_lower_badge_to_craft || 0
+      (base_marks * rarity_multiplier * (1 + badges_required * 0.1)).round(0)
     end
 
     def calculate_flex_craft(contract)
-      case contract.rarity.name
-      when "Common" then 1_320
-      when "Uncommon" then 293
-      when "Rare" then 1_356
-      when "Epic" then 25_900
-      when "Legendary" then 99_400
-      when "Mythic" then 368_192
-      else "???"
-      end
+      base_flex = 1320  # Coût de base pour Common
+      rarity_multiplier = get_rarity_multiplier(contract.rarity.name)
+      floor_price_factor = contract.floorPrice ? Math.log10(contract.floorPrice) : 1
+
+      (base_flex * rarity_multiplier * floor_price_factor).round(0)
     end
 
     def calculate_sp_marks_for_level(level)
@@ -169,12 +140,9 @@ module DataLab
     end
 
     def calculate_total_cost_for_level(level)
-      case level
-      when 1 then 0.65
-      when 2 then 2.04
-      when 3 then 3.96
-      when 4 then 6.66
-      end
+      sp_marks = calculate_sp_marks_for_level(level)
+      return 0 if sp_marks == 0
+      (sp_marks * 0.01).round(2)  # Conversion Sponsor Marks en USD
     end
 
     def format_currency(amount)
@@ -191,8 +159,16 @@ module DataLab
       when "Legendary" then 144 * 60
       when "Mythic" then 168 * 60
       when "Exalted" then 192 * 60
-      else 48 * 60
+      when "Exotic" then 216 * 60
+      when "Transcendent" then 240 * 60
+      when "Unique" then 264 * 60
       end
+    end
+
+    def get_rarity_multiplier(rarity_name)
+      rarity_index = RARITY_ORDER.index(rarity_name)
+      return 1 if rarity_index.nil?
+      (1.5 ** rarity_index).round(2)
     end
   end
 end
