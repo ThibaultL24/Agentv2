@@ -1,7 +1,8 @@
 module DataLab
   class SlotsMetricsCalculator
-    def initialize(user)
+    def initialize(user, badge_rarity = "Common")
       @user = user
+      @badge_rarity = badge_rarity
     end
 
     def calculate
@@ -27,8 +28,8 @@ module DataLab
             price_usd: format_currency(slot.unlockPrice)
           },
           bonus_sbft_per_slot: calculate_bonus_sbft_percentage(slot),
-          normal_part_sbft_badge: 14,
-          bonus_part_sbft_badge: calculate_bonus_part_sbft(slot)
+          normal_part_sbft_badge: calculate_normal_part_sbft(@badge_rarity),
+          bonus_part_sbft_badge: calculate_bonus_part_sbft(slot, @badge_rarity)
         }
       end
     end
@@ -96,14 +97,30 @@ module DataLab
       end
     end
 
-    def calculate_bonus_part_sbft(slot)
-      case slot.id
-      when 1 then 0
-      when 2 then 1
-      when 3 then 2
-      when 4 then 4
-      when 5 then 6
+    def calculate_normal_part_sbft(rarity)
+      # Récupérer les métriques du badge selon sa rareté
+      badge_metrics = BadgesMetricsCalculator::BADGE_METRICS[rarity]
+      return 15 if badge_metrics.nil? # Valeur par défaut si la rareté n'est pas trouvée
+
+      # Utiliser directement sbft_per_minute du badge
+      badge_metrics[:sbft_per_minute]
+    end
+
+    def calculate_bonus_part_sbft(slot, rarity)
+      base_bonus = case slot.id
+        when 1 then 0
+        when 2 then 1
+        when 3 then 2
+        when 4 then 4
+        when 5 then 6
       end
+
+      # Appliquer le multiplicateur basé sur la rareté
+      badge_metrics = BadgesMetricsCalculator::BADGE_METRICS[rarity]
+      return base_bonus if badge_metrics.nil?
+
+      # Multiplier le bonus de base par le ratio du badge
+      (base_bonus * badge_metrics[:ratio]).round(2)
     end
 
     def calculate_total_bonus_percentage(user_slots)

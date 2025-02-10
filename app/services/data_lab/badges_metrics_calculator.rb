@@ -103,8 +103,8 @@ module DataLab
       },
       "Exalted" => {
         name: "Champion",
-        supply: 2_000,
-        floor_price: 15000.00,
+        supply: 1_000,
+        floor_price: 100_000.00,
         efficiency: 375.74,
         ratio: 253.55,
         max_energy: 7,
@@ -119,8 +119,8 @@ module DataLab
       },
       "Exotic" => {
         name: "Olympian",
-        supply: 500,
-        floor_price: 50000.00,
+        supply: 250,
+        floor_price: 55_000.00,
         efficiency: 154.054,
         ratio: 1164.8,
         max_energy: 8,
