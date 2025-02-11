@@ -7,166 +7,66 @@ module DataLab
     BFT_PRICE = 0.01
     FLEX_PRICE = 0.0077
 
-    BADGE_METRICS = {
+    BADGE_BASE_METRICS = {
       "Common" => {
         name: "Rookie",
         supply: 200_000,
         floor_price: 7.99,
-        efficiency: 0.1,
-        ratio: 1.00,
-        max_energy: 1,
-        time_to_charge: "8h00",
-        in_game_time: "01h00",
-        max_charge_cost: 5.35,
-        cost_per_hour: 0.89,
-        sbft_per_minute: 15,
-        sbft_per_max_charge: 900,
-        sbft_value: 9.00,
-        roi: 1.31
+        efficiency: 0.1
       },
       "Uncommon" => {
         name: "Initiate",
         supply: 100_000,
         floor_price: 28.50,
-        efficiency: 0.205,
-        ratio: 2.05,
-        max_energy: 2,
-        time_to_charge: "7h45",
-        in_game_time: "02h00",
-        max_charge_cost: 14.28,
-        cost_per_hour: 1.19,
-        sbft_per_minute: 50,
-        sbft_per_max_charge: 6000,
-        sbft_value: 60.00,
-        roi: 3.62
+        efficiency: 0.205
       },
       "Rare" => {
         name: "Encore",
         supply: 50_000,
         floor_price: 82.50,
-        efficiency: 0.420,
-        ratio: 2.15,
-        max_energy: 3,
-        time_to_charge: "7h30",
-        in_game_time: "03h00",
-        max_charge_cost: 34.16,
-        cost_per_hour: 1.90,
-        sbft_per_minute: 120,
-        sbft_per_max_charge: 21600,
-        sbft_value: 216.00,
-        roi: 4.12
+        efficiency: 0.420
       },
       "Epic" => {
         name: "Contender",
         supply: 25_000,
         floor_price: 410.00,
-        efficiency: 1.292,
-        ratio: 8.72,
-        max_energy: 4,
-        time_to_charge: "7h15",
-        in_game_time: "04h00",
-        max_charge_cost: 68.74,
-        cost_per_hour: 2.86,
-        sbft_per_minute: 350,
-        sbft_per_max_charge: 84000,
-        sbft_value: 840.00,
-        roi: 4.66
+        efficiency: 1.292
       },
       "Legendary" => {
         name: "Challenger",
         supply: 10_000,
         floor_price: 1000.00,
-        efficiency: 3.974,
-        ratio: 26.82,
-        max_energy: 5,
-        time_to_charge: "7h00",
-        in_game_time: "05h00",
-        max_charge_cost: 133.02,
-        cost_per_hour: 14.43,
-        sbft_per_minute: 1000,
-        sbft_per_max_charge: 300000,
-        sbft_value: 3000.00,
-        roi: 5.01
+        efficiency: 3.974
       },
       "Mythic" => {
         name: "Veteran",
         supply: 5_000,
         floor_price: 4000.00,
-        efficiency: 12.219,
-        ratio: 82.42,
-        max_energy: 6,
-        time_to_charge: "6h45",
-        in_game_time: "06h00",
-        max_charge_cost: 264.89,
-        cost_per_hour: 7.36,
-        sbft_per_minute: 2500,
-        sbft_per_max_charge: "???",
-        sbft_value: "???",
-        roi: "???"
+        efficiency: 12.219
       },
       "Exalted" => {
         name: "Champion",
         supply: 1_000,
         floor_price: 100_000.00,
-        efficiency: 375.74,
-        ratio: 253.55,
-        max_energy: 7,
-        time_to_charge: "6h30",
-        in_game_time: "07h00",
-        max_charge_cost: "???",
-        cost_per_hour: "???",
-        sbft_per_minute: 5000,
-        sbft_per_max_charge: "???",
-        sbft_value: "???",
-        roi: "???"
+        efficiency: 375.74
       },
       "Exotic" => {
         name: "Olympian",
         supply: 250,
         floor_price: 55_000.00,
-        efficiency: 154.054,
-        ratio: 1164.8,
-        max_energy: 8,
-        time_to_charge: "6h15",
-        in_game_time: "08h00",
-        max_charge_cost: "???",
-        cost_per_hour: "???",
-        sbft_per_minute: 10000,
-        sbft_per_max_charge: "???",
-        sbft_value: "???",
-        roi: "???"
+        efficiency: 154.054
       },
       "Transcendent" => {
         name: "Prodigy",
         supply: 100,
         floor_price: 150000.00,
-        efficiency: 631.620,
-        ratio: 4775.66,
-        max_energy: 9,
-        time_to_charge: "6h00",
-        in_game_time: "09h00",
-        max_charge_cost: "???",
-        cost_per_hour: "???",
-        sbft_per_minute: 25000,
-        sbft_per_max_charge: "???",
-        sbft_value: "???",
-        roi: "???"
+        efficiency: 631.620
       },
       "Unique" => {
         name: "MVP",
         supply: 1,
         floor_price: 500000.00,
-        efficiency: 2589.642,
-        ratio: 19580.22,
-        max_energy: 10,
-        time_to_charge: "5h45",
-        in_game_time: "10h00",
-        max_charge_cost: "???",
-        cost_per_hour: "???",
-        sbft_per_minute: 50000,
-        sbft_per_max_charge: "???",
-        sbft_value: "???",
-        roi: "???"
+        efficiency: 2589.642
       }
     }.freeze
 
