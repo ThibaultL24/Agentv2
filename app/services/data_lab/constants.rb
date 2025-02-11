@@ -1,113 +1,19 @@
 module DataLab
   module Constants
-    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Exalted", "Exotic", "Transcendent", "Unique"]
-
-    # Taux de conversion
+    # Taux de conversion monétaires (fixes)
     FLEX_TO_USD = 0.0077
     BFT_TO_USD = 0.01
     SM_TO_USD = 0.01
 
-    # Constantes de base du jeu
-    PACK_PRICE = 80.00
-    SLOTS_UNLOCK_COST = 508.03
+    # Ordre des raretés (fixe)
+    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Exalted", "Exotic", "Transcendent", "Unique"]
+
+    # Règles de jeu fixes
     MATCHES_PER_CHARGE = 18
-    CHARGES_PER_BADGE = 3
-    FLEX_COST_PER_CHARGE = 1800
-    BFT_PER_CHARGE = 1800
+    MINUTES_PER_MATCH = 10
+    HOURS_PER_ENERGY = 1
 
-    # Sponsor Marks rewards
-    SPONSOR_MARKS = {
-      "Common" => 26,
-      "Uncommon" => 80,
-      "Rare" => 250,
-      "Epic" => 760,
-      "Legendary" => 2300,
-      "Mythic" => 7200,
-      "Exalted" => 3200,
-      "Exotic" => 10000,
-      "Transcendent" => 31400,
-      "Unique" => 97400
-    }
-
-    # Badge related constants
-    BADGE_SUPPLY = {
-      "Common" => 200_000,
-      "Uncommon" => 100_000,
-      "Rare" => 50_000,
-      "Epic" => 25_000,
-      "Legendary" => 10_000,
-      "Mythic" => 5_000,
-      "Exalted" => 2_000,
-      "Exotic" => 500,
-      "Transcendent" => 100,
-      "Unique" => 1
-    }
-
-    BASE_EFFICIENCY = {
-      "Common" => 0.1,
-      "Uncommon" => 0.205,
-      "Rare" => 0.420,
-      "Epic" => 1.292,
-      "Legendary" => 3.974,
-      "Mythic" => 12.219,
-      "Exalted" => 375.74,
-      "Exotic" => 154.054,
-      "Transcendent" => 631.620,
-      "Unique" => 2589.642
-    }
-
-    BADGE_RATIOS = {
-      "Common" => 1.00,
-      "Uncommon" => 2.05,
-      "Rare" => 2.15,
-      "Epic" => 8.72,
-      "Legendary" => 26.82,
-      "Mythic" => 82.42,
-      "Exalted" => 253.55,
-      "Exotic" => 1164.8,
-      "Transcendent" => 4775.66,
-      "Unique" => 19580.22
-    }
-
-    MAX_ENERGY = {
-      "Common" => 1,
-      "Uncommon" => 2,
-      "Rare" => 3,
-      "Epic" => 4,
-      "Legendary" => 5,
-      "Mythic" => 6,
-      "Exalted" => 7,
-      "Exotic" => 8,
-      "Transcendent" => 9,
-      "Unique" => 10
-    }
-
-    RECHARGE_TIMES = {
-      "Common" => "8h00",
-      "Uncommon" => "7h45",
-      "Rare" => "7h30",
-      "Epic" => "7h15",
-      "Legendary" => "7h00",
-      "Mythic" => "6h45",
-      "Exalted" => "6h30",
-      "Exotic" => "6h15",
-      "Transcendent" => "6h00",
-      "Unique" => "5h45"
-    }
-
-    BFT_PER_MINUTE = {
-      "Common" => 15,
-      "Uncommon" => 50,
-      "Rare" => 120,
-      "Epic" => 350,
-      "Legendary" => 1000,
-      "Mythic" => 2500,
-      "Exalted" => 5000,
-      "Exotic" => 10000,
-      "Transcendent" => 25000,
-      "Unique" => 50000
-    }
-
+    # Noms des badges (règles de jeu fixes)
     BADGE_NAMES = {
       "Common" => "Rookie",
       "Uncommon" => "Initiate",
@@ -121,71 +27,6 @@ module DataLab
       "Unique" => "MVP"
     }
 
-    # Slots related constants
-    SLOT_COSTS = {
-      1 => 7000,
-      2 => 13000,
-      3 => 20000,
-      4 => 26000,
-      5 => 66000
-    }
-
-    SLOT_BONUS_PERCENTAGES = {
-      1 => 10,
-      2 => 15,
-      3 => 20,
-      4 => 25,
-      5 => 30
-    }
-
-    SLOT_MULTIPLIERS = {
-      1 => 1.1,
-      2 => 1.25,
-      3 => 1.45,
-      4 => 1.7,
-      5 => 2.0
-    }
-
-    SLOT_BONUS_VALUES = {
-      1 => 0.5,
-      2 => 0.75,
-      3 => 1.0,
-      4 => 1.25,
-      5 => 1.5
-    }
-
-    CHARGES_ROI = {
-      1 => { multiplier_1: 1.1, multiplier_2: 1.2, multiplier_3: 1.3 },
-      2 => { multiplier_1: 1.2, multiplier_2: 1.3, multiplier_3: 1.4 },
-      3 => { multiplier_1: 1.3, multiplier_2: 1.4, multiplier_3: 1.5 },
-      4 => { multiplier_1: 1.4, multiplier_2: 1.5, multiplier_3: 1.6 },
-      5 => { multiplier_1: 1.5, multiplier_2: 1.6, multiplier_3: 1.7 }
-    }
-
-    # Temps et cycles
-    BADGE_RECHARGE_TIME = "7h30"
-    CYCLE_6H_BFT_PER_DAY = 19_980
-    CYCLE_3H_BFT_PER_DAY = 9_990
-
-    # Coûts et profits
-    MATCH_FEE = 0.77
-    CHARGE_FEE = 13.86
-    RARE_BADGE_RECHARGE_COST = 161.65
-    EPIC_BADGE_CRAFT_FLEX = 1975
-    EPIC_BADGE_CRAFT_TIME = "5d"
-    FULL_RECHARGE_FLEX = 4200
-    FULL_RECHARGE_COST = 10.78
-
-    # Profits par cycle
-    CYCLE_6H_MONTHLY_PROFIT = 1360.68
-    CYCLE_3H_MONTHLY_PROFIT = 728.94
-    CYCLE_2D_MONTHLY_PROFIT = 1822.34
-
-    # ROI en jours
-    CYCLE_6H_ROI_DAYS = 12.10
-    CYCLE_3H_ROI_DAYS = 24.20
-    CYCLE_2D_ROI_DAYS = 9.68
-
     # Méthodes utilitaires communes
     module Utils
       def format_currency(amount)
@@ -198,67 +39,134 @@ module DataLab
         hours, minutes = time_str.match(/(\d+)h(\d+)?/).captures
         hours.to_i * 60 + (minutes || "0").to_i
       end
-
-      def calculate_total_cost(flex_amount, sm_amount)
-        flex_cost = flex_amount * FLEX_TO_USD
-        sm_cost = sm_amount * SM_TO_USD
-        (flex_cost + sm_cost).round(2)
-      end
     end
 
     # Méthodes de calcul communes
     module Calculator
       extend self
 
+      def calculate_max_energy(rarity)
+        return 1 unless rarity && RARITY_ORDER.include?(rarity)
+        case rarity
+        when "Common" then 1
+        when "Uncommon" then 2
+        when "Rare" then 3
+        when "Epic" then 4
+        when "Legendary" then 5
+        when "Mythic" then 6
+        when "Exalted" then 7
+        when "Exotic" then 8
+        when "Transcendent" then 9
+        when "Unique" then 10
+        else 1
+        end
+      end
+
+      def calculate_recharge_time(rarity)
+        return "8h00" unless rarity && RARITY_ORDER.include?(rarity)
+        case rarity
+        when "Common" then "8h00"
+        when "Uncommon" then "7h45"
+        when "Rare" then "7h30"
+        when "Epic" then "7h15"
+        when "Legendary" then "7h00"
+        when "Mythic" then "6h45"
+        when "Exalted" then "6h30"
+        when "Exotic" then "6h15"
+        when "Transcendent" then "6h00"
+        when "Unique" then "5h45"
+        else "8h00"
+        end
+      end
+
+      def calculate_bft_per_minute(rarity)
+        case rarity
+        when "Common" then 15
+        when "Uncommon" then 50
+        when "Rare" then 120
+        when "Epic" then 350
+        when "Legendary" then 1000
+        when "Mythic" then 2500
+        when "Exalted" then 5000
+        when "Exotic" then 10000
+        when "Transcendent" then 25000
+        when "Unique" then 50000
+        else 0
+        end
+      end
+
       def calculate_recharge_cost(rarity)
-        flex_cost = case rarity
-        when "Common" then 500
-        when "Uncommon" then 1400
-        when "Rare" then 2520
-        when "Epic" then 4800
-        when "Legendary" then 12000
-        when "Mythic" then 21000
-        else 0
-        end
+        flex_costs = {
+          "Common" => 500,
+          "Uncommon" => 1400,
+          "Rare" => 2520,
+          "Epic" => 4800,
+          "Legendary" => 12000,
+          "Mythic" => 21000,
+          "Exalted" => 9800,
+          "Exotic" => 11200,
+          "Transcendent" => 12600,
+          "Unique" => 14000
+        }
 
-        sm_cost = case rarity
-        when "Common" then 150
-        when "Uncommon" then 350
-        when "Rare" then 1023
-        when "Epic" then 1980
-        when "Legendary" then 4065
-        when "Mythic" then 8136
-        else 0
-        end
+        sm_costs = {
+          "Common" => 150,
+          "Uncommon" => 350,
+          "Rare" => 1023,
+          "Epic" => 1980,
+          "Legendary" => 4065,
+          "Mythic" => 8136,
+          "Exalted" => nil,
+          "Exotic" => nil,
+          "Transcendent" => nil,
+          "Unique" => nil
+        }
 
-        total_usd = (flex_cost * FLEX_TO_USD + sm_cost * SM_TO_USD).round(2)
+        flex_cost = flex_costs[rarity]
+        sm_cost = sm_costs[rarity]
+
+        return nil if flex_cost.nil? || sm_cost.nil?
 
         {
           flex: flex_cost,
           sm: sm_cost,
-          total_usd: total_usd
+          total_usd: (flex_cost * FLEX_TO_USD + sm_cost * SM_TO_USD).round(2)
         }
       end
 
-      def calculate_hourly_bft(rarity)
-        base_bft = BFT_PER_MINUTE[rarity] || 0
-        base_bft * 60
+      def calculate_bft_value_per_max_charge(rarity)
+        bft_per_minute = calculate_bft_per_minute(rarity)
+        max_energy = calculate_max_energy(rarity)
+        return nil if bft_per_minute.nil? || max_energy.nil?
+
+        minutes_per_energy = 60 # 1 heure par énergie
+        total_bft = bft_per_minute * max_energy * minutes_per_energy
+        (total_bft * BFT_TO_USD).round(2)
       end
 
-      def calculate_daily_profit(rarity, level = 1)
-        hourly_bft = calculate_hourly_bft(rarity)
-        recharge_cost = calculate_recharge_cost(rarity)
-        hours_per_charge = 3
+      def calculate_roi(badge, recharge_cost, bft_value_per_max_charge)
+        return nil if badge.nil? || recharge_cost.nil? || bft_value_per_max_charge.nil? || bft_value_per_max_charge.zero?
 
-        daily_bft = (24 / hours_per_charge) * hourly_bft * hours_per_charge
-        daily_cost = (24 / hours_per_charge) * recharge_cost[:total_usd]
-        daily_profit = (daily_bft * BFT_TO_USD) - daily_cost
+        total_cost = badge.floorPrice.to_f + recharge_cost.to_f
+        return nil if total_cost.zero?
 
-        {
-          bft: daily_bft,
-          cost: daily_cost,
-          profit: daily_profit
-        }
+        numerator = total_cost + (((total_cost/bft_value_per_max_charge) - 1) * recharge_cost)
+        (numerator / bft_value_per_max_charge).round(2)
+      end
+
+      def calculate_slot_roi(badge, slots_count, slot_total_cost, recharge_cost, bft_value_per_max_charge)
+        return 0 if badge.nil? || slots_count.nil? || slot_total_cost.nil? || recharge_cost.nil? || bft_value_per_max_charge.nil? || bft_value_per_max_charge.zero?
+
+        total_cost = badge.floor_price + recharge_cost
+        slots = slots_count + 1
+
+        numerator = slot_total_cost +
+                   (total_cost * slots) +
+                   ((((total_cost * slots)/bft_value_per_max_charge) - (1 * slots)) * recharge_cost)
+
+        denominator = bft_value_per_max_charge * slots
+
+        (numerator / denominator).round(2)
       end
     end
   end

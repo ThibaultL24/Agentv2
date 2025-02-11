@@ -3,13 +3,6 @@ module DataLab
     include Constants::Utils
     include Constants::Calculator
 
-    # Données fixes uniquement pour les levels 1, 5 et 10
-    FIXED_LEVEL_DATA = {
-      1 => { sp_marks: 420, cost: 3.2329 },
-      5 => { sp_marks: 2174, cost: 16.7343 },
-      10 => { sp_marks: 4545, cost: 34.9850 }
-    }.freeze
-
     def initialize(user)
       @user = user
     end
@@ -17,7 +10,7 @@ module DataLab
     def calculate
       contracts = load_contracts
       {
-        contracts: calculate_contracts_cost(contracts),
+        contracts: calculate_contracts_metrics(contracts),
         level_up: calculate_level_up_costs
       }
     end
@@ -31,96 +24,120 @@ module DataLab
           .sort_by { |contract| Constants::RARITY_ORDER.index(contract.rarity.name) }
     end
 
-    def calculate_contracts_cost(contracts)
+    def calculate_contracts_metrics(contracts)
       contracts.map do |contract|
         rarity = contract.rarity.name
+        recharge_cost = calculate_recharge_cost(rarity)
+        bft_per_minute = calculate_bft_per_minute(rarity)
+        max_energy = calculate_max_energy(rarity)
+        bft_value_per_max_charge = calculate_bft_value_per_max_charge(rarity)
+
         {
           "1. rarity": rarity,
-          "2. item": Constants::CONTRACT_NAMES[rarity],
-          "3. supply": Constants::CONTRACT_SUPPLY[rarity],
+          "2. item": Constants::BADGE_NAMES[rarity] || "Unknown",
+          "3. supply": contract.supply || 0,
           "4. floor_price": format_currency(contract.floorPrice),
-          "5. lvl_max": Constants::CONTRACT_MAX_LEVELS[rarity],
-          "6. max_energy": Constants::CONTRACT_MAX_ENERGY[rarity],
+          "5. lvl_max": calculate_contract_max_level(rarity),
+          "6. max_energy": max_energy,
           "7. time_to_craft": format_hours(calculate_craft_time(rarity)),
           "8. nb_badges_required": contract.item_crafting&.nb_lower_badge_to_craft || 0,
-          "9. flex_craft": calculate_flex_craft(contract),
-          "10. sp_marks_craft": calculate_sp_marks_craft(contract),
-          "11. time_to_charge": format_time_to_charge(rarity),
-          "12. flex_charge": calculate_flex_charge(rarity),
-          "13. sp_marks_charge": calculate_sp_marks_charge(rarity)
+          "9. flex_craft": calculate_flex_craft_cost(rarity),
+          "10. sp_marks_craft": calculate_sp_marks_craft_cost(rarity),
+          "11. time_to_charge": calculate_recharge_time(rarity),
+          "12. flex_charge": recharge_cost&.[](:flex),
+          "13. sp_marks_charge": recharge_cost&.[](:sm)
         }
       end
     end
 
     def calculate_level_up_costs
+      # D'après le notepad, les coûts de level up sont fixes par niveau
       (1..15).map do |level|
-        if Constants::CONTRACT_LEVEL_DATA.key?(level)
-          data = Constants::CONTRACT_LEVEL_DATA[level]
-          {
-            "1. level": level,
-            "2. sp_marks_nb": data[:sp_marks],
-            "3. sp_marks_cost": format_currency(data[:sp_marks] * Constants::SM_TO_USD),
-            "4. total_cost": format_currency(data[:total_cost])
-          }
-        else
-          {
-            "1. level": level,
-            "2. sp_marks_nb": nil,
-            "3. sp_marks_cost": "???",
-            "4. total_cost": "???"
-          }
+        sp_marks = case level
+          when 1 then 420
+          when 2 then 855
+          when 3 then 1275
+          when 4 then 1695
+          when 5 then 2174
+          when 6 then 2632
+          when 7 then 2940
+          when 8 then 760
+          when 9 then 848
+          when 10 then 4545
+          when 11 then 1025
+          when 12 then 1113
+          when 13 then 1201
+          when 14 then 1289
+          when 15 then 1378
+          else 0
         end
+
+        {
+          "1. level": level,
+          "2. sp_marks_nb": sp_marks,
+          "3. sp_marks_cost": format_currency(sp_marks * Constants::SM_TO_USD),
+          "4. total_cost": format_currency(sp_marks * Constants::SM_TO_USD)
+        }
+      end
+    end
+
+    def calculate_contract_max_level(rarity)
+      # D'après le notepad
+      case rarity
+      when "Common" then 10
+      when "Uncommon" then 20
+      when "Rare" then 30
+      when "Epic" then 40
+      when "Legendary" then 50
+      when "Mythic" then 60
+      when "Exalted" then 70
+      when "Exotic" then 80
+      when "Transcendent" then 90
+      when "Unique" then 100
+      else 0
       end
     end
 
     def calculate_craft_time(rarity)
-      base_time = Constants::CONTRACT_BASE_CRAFT_TIME
-      rarity_index = Constants::RARITY_ORDER.index(rarity) || 0
-      base_time + (rarity_index * Constants::CONTRACT_CRAFT_TIME_INCREMENT)
+      # D'après le notepad, temps de craft en heures
+      case rarity
+      when "Common" then 120
+      when "Uncommon" then 180
+      when "Rare" then 240
+      when "Epic" then 300
+      when "Legendary" then 360
+      when "Mythic" then 420
+      when "Exalted" then 480
+      else 0
+      end
     end
 
-    def format_time_to_charge(rarity)
-      base_time = Constants::CONTRACT_BASE_RECHARGE_TIME
-      rarity_index = Constants::RARITY_ORDER.index(rarity) || 0
-      reduction = rarity_index * Constants::CONTRACT_RECHARGE_TIME_REDUCTION
-
-      hours = (base_time - reduction) / 60
-      minutes = (base_time - reduction) % 60
-      "%dh%02d" % [hours, minutes]
+    def calculate_flex_craft_cost(rarity)
+      # D'après le notepad
+      case rarity
+      when "Common" then 1300
+      when "Uncommon" then 290
+      when "Rare" then 1400
+      when "Epic" then 6300
+      when "Legendary" then 25600
+      when "Mythic" then 92700
+      when "Exalted" then 368192
+      else 0
+      end
     end
 
-    def calculate_flex_charge(rarity)
-      return Constants::FLEX_COST_PER_CHARGE if rarity == "Rare"
-
-      base_cost = Constants::FLEX_COST_PER_CHARGE
-      multiplier = Constants::CONTRACT_RARITY_MULTIPLIERS[rarity] || 1
-      (base_cost * multiplier).round(0)
-    end
-
-    def calculate_sp_marks_charge(rarity)
-      flex_cost = calculate_flex_charge(rarity)
-      (flex_cost * Constants::CONTRACT_SP_MARKS_MULTIPLIER).round(0)
-    end
-
-    def calculate_flex_craft(contract)
-      rarity = contract.rarity.name
-      base_flex = Constants::CONTRACT_BASE_FLEX_CRAFT
-      multiplier = Constants::CONTRACT_RARITY_MULTIPLIERS[rarity] || 1
-      floor_price_factor = contract.floorPrice ? Math.log10(contract.floorPrice) : 1
-
-      (base_flex * multiplier * floor_price_factor).round(0)
-    end
-
-    def calculate_sp_marks_craft(contract)
-      rarity = contract.rarity.name
-      return 0 if rarity == "Common"
-      return Constants::EPIC_BADGE_CRAFT_FLEX if rarity == "Epic"
-
-      base_marks = Constants::CONTRACT_BASE_SP_MARKS_CRAFT
-      multiplier = Constants::CONTRACT_RARITY_MULTIPLIERS[rarity] || 1
-      badges_required = contract.item_crafting&.nb_lower_badge_to_craft || 0
-
-      (base_marks * multiplier * (1 + badges_required * 0.1)).round(0)
+    def calculate_sp_marks_craft_cost(rarity)
+      # D'après le notepad
+      case rarity
+      when "Common" then 0
+      when "Uncommon" then 3967
+      when "Rare" then 6616
+      when "Epic" then 16556
+      when "Legendary" then 27618
+      when "Mythic" then 28222
+      when "Exalted" then 219946
+      else 0
+      end
     end
 
     def format_hours(minutes)

@@ -193,130 +193,191 @@ module DataLab
 
     def calculate_badges_metrics(badges)
       badges.map do |badge|
+        next unless badge&.rarity&.name
         rarity = badge.rarity.name
-        recharge_cost = Constants::Calculator.calculate_recharge_cost(rarity)
-        hourly_bft = Constants::Calculator.calculate_hourly_bft(rarity)
-        daily_profit = Constants::Calculator.calculate_daily_profit(rarity, 1)
+        recharge_cost = calculate_recharge_cost(rarity)
+        bft_per_minute = calculate_bft_per_minute(badge)
+        max_energy = calculate_max_energy(badge)
+        bft_value_per_max_charge = calculate_bft_value_per_max_charge(badge)
 
         {
-          rarity: rarity,
-          item: get_badge_name(rarity),
-          supply: Constants::BADGE_SUPPLY[rarity],
-          floor_price: format_currency(badge.floorPrice),
-          efficiency: Constants::BASE_EFFICIENCY[rarity],
-          ratio: Constants::BADGE_RATIOS[rarity],
-          max_energy: Constants::MAX_ENERGY[rarity],
-          time_to_charge: Constants::RECHARGE_TIMES[rarity],
-          in_game_time: calculate_in_game_time(rarity),
-          max_charge_cost: format_currency(recharge_cost[:total_usd]),
-          cost_per_hour: format_currency(calculate_cost_per_hour(rarity)),
-          sbft_per_minute: Constants::BFT_PER_MINUTE[rarity],
-          sbft_per_max_charge: calculate_sbft_per_max_charge(rarity),
-          sbft_value_per_max_charge: format_currency(calculate_sbft_value_per_max_charge(rarity)),
-          roi: calculate_roi(badge, daily_profit)
+          "1. rarity": rarity,
+          "2. item": Constants::BADGE_NAMES[rarity] || "Unknown",
+          "3. supply": badge.supply || 0,
+          "4. floor_price": format_currency(badge.floorPrice),
+          "5. max_energy": max_energy,
+          "6. time_to_charge": calculate_recharge_time(badge),
+          "7. in_game_time": calculate_in_game_time(badge),
+          "8. recharge_cost": format_currency(recharge_cost&.[](:total_usd)),
+          "9. bft_per_minute": bft_per_minute,
+          "10. bft_per_max_charge": calculate_bft_per_max_charge(badge),
+          "11. bft_value_per_max_charge": format_currency(bft_value_per_max_charge),
+          "12. roi": calculate_roi(badge, recharge_cost&.[](:total_usd), bft_value_per_max_charge)
         }
-      end
+      end.compact
     end
 
     def calculate_badges_details(badges)
       badges.map do |badge|
         rarity = badge.rarity.name
-        recharge_cost = Constants::Calculator.calculate_recharge_cost(rarity)
+        recharge_cost = calculate_recharge_cost(rarity)
+        bft_value_per_max_charge = calculate_bft_value_per_max_charge(badge)
 
         {
-          rarity: rarity,
-          badge_price: format_currency(badge.floorPrice),
-          full_recharge_price: format_currency(recharge_cost[:total_usd]),
-          one_energy_recharge_price: format_currency(calculate_one_energy_cost(rarity)),
-          total_cost: format_currency(calculate_total_cost(badge, recharge_cost)),
-          in_game_minutes: calculate_in_game_minutes(rarity),
-          sbft_per_max_recharge: calculate_sbft_per_max_recharge(rarity),
-          sbft_value: format_currency(calculate_sbft_value(rarity)),
-          nb_charges_roi: calculate_nb_charges_roi(badge, recharge_cost)
+          "1. rarity": rarity,
+          "2. badge_price": format_currency(badge.floorPrice),
+          "3. full_recharge_price": format_currency(recharge_cost&.[](:total_usd)),
+          "4. total_cost": format_currency(badge.floorPrice.to_f + (recharge_cost&.[](:total_usd) || 0)),
+          "5. in_game_minutes": calculate_in_game_minutes(badge),
+          "6. bft_per_max_charge": calculate_bft_per_max_charge(badge),
+          "7. bft_value": format_currency(bft_value_per_max_charge),
+          "8. roi": calculate_roi(badge, recharge_cost&.[](:total_usd), bft_value_per_max_charge)
         }
       end
     end
 
-    def calculate_cost_per_hour(rarity)
-      recharge_cost = Constants::Calculator.calculate_recharge_cost(rarity)
-      max_energy = Constants::MAX_ENERGY[rarity]
-      return nil if max_energy.nil? || max_energy.zero?
-      (recharge_cost[:total_usd] / max_energy).round(2)
+    def calculate_in_game_time(badge)
+      minutes = calculate_in_game_minutes(badge)
+      "#{minutes / 60}h"
     end
 
-    def calculate_sbft_per_max_charge(rarity)
-      bft_per_minute = Constants::BFT_PER_MINUTE[rarity]
-      max_energy = Constants::MAX_ENERGY[rarity]
+    def calculate_in_game_minutes(badge)
+      return 0 unless badge&.rarity&.name && Constants::RARITY_ORDER.include?(badge.rarity.name)
+
+      base_time = case badge.rarity.name
+      when "Common" then 60
+      when "Uncommon" then 120
+      when "Rare" then 180
+      when "Epic" then 240
+      when "Legendary" then 300
+      when "Mythic" then 360
+      when "Exalted" then 420
+      when "Exotic" then 480
+      when "Transcendent" then 540
+      when "Unique" then 600
+      else 0
+      end
+
+      base_time
+    end
+
+    def calculate_bft_per_max_charge(badge)
+      bft_per_minute = calculate_bft_per_minute(badge)
+      max_energy = calculate_max_energy(badge)
       return nil if bft_per_minute.nil? || max_energy.nil?
-      bft_per_minute * 60 * max_energy
+      bft_per_minute * max_energy * 60
     end
 
-    def calculate_sbft_value_per_max_charge(rarity)
-      sbft = calculate_sbft_per_max_charge(rarity)
-      return nil if sbft.nil?
-      (sbft * Constants::BFT_TO_USD).round(2)
+    def calculate_recharge_cost(rarity)
+      flex_costs = {
+        "Common" => 500,
+        "Uncommon" => 1400,
+        "Rare" => 2520,
+        "Epic" => 4800,
+        "Legendary" => 12000,
+        "Mythic" => 21000,
+        "Exalted" => 9800,
+        "Exotic" => 11200,
+        "Transcendent" => 12600,
+        "Unique" => 14000
+      }
+
+      sm_costs = {
+        "Common" => 150,
+        "Uncommon" => 350,
+        "Rare" => 1023,
+        "Epic" => 1980,
+        "Legendary" => 4065,
+        "Mythic" => 8136,
+        "Exalted" => nil,
+        "Exotic" => nil,
+        "Transcendent" => nil,
+        "Unique" => nil
+      }
+
+      flex_cost = flex_costs[rarity]
+      sm_cost = sm_costs[rarity]
+
+      return nil if flex_cost.nil? || sm_cost.nil?
+
+      {
+        flex: flex_cost,
+        sm: sm_cost,
+        total_usd: (flex_cost * FLEX_PRICE + sm_cost * BFT_PRICE).round(2)
+      }
     end
 
-    def calculate_roi(badge, daily_profit)
-      return nil if badge.floorPrice.nil? || daily_profit.nil? || daily_profit[:profit].to_f <= 0
-      (badge.floorPrice / daily_profit[:profit]).round(2)
+    def calculate_bft_per_minute(badge)
+      return nil unless badge&.item_farming&.efficiency
+      case badge.rarity.name
+      when "Common" then 15
+      when "Uncommon" then 50
+      when "Rare" then 120
+      when "Epic" then 350
+      when "Legendary" then 1000
+      when "Mythic" then 2500
+      when "Exalted" then 5000
+      when "Exotic" then 10000
+      when "Transcendent" then 25000
+      when "Unique" then 50000
+      else nil
+      end
     end
 
-    def calculate_one_energy_cost(rarity)
-      recharge_cost = Constants::Calculator.calculate_recharge_cost(rarity)
-      max_energy = Constants::MAX_ENERGY[rarity]
-      return nil if max_energy.nil? || max_energy.zero?
-      (recharge_cost[:total_usd] / max_energy).round(2)
+    def calculate_max_energy(badge)
+      return nil unless badge&.rarity&.name
+      case badge.rarity.name
+      when "Common" then 1
+      when "Uncommon" then 2
+      when "Rare" then 3
+      when "Epic" then 4
+      when "Legendary" then 5
+      when "Mythic" then 6
+      when "Exalted" then 7
+      when "Exotic" then 8
+      when "Transcendent" then 9
+      when "Unique" then 10
+      else nil
+      end
     end
 
-    def calculate_total_cost(badge, recharge_cost)
-      return nil if badge.floorPrice.nil? || recharge_cost.nil?
-      (badge.floorPrice + recharge_cost[:total_usd]).round(2)
+    def calculate_recharge_time(badge)
+      return nil unless badge&.rarity&.name && Constants::RARITY_ORDER.include?(badge.rarity.name)
+      case badge.rarity.name
+      when "Common" then "8h00"
+      when "Uncommon" then "7h45"
+      when "Rare" then "7h30"
+      when "Epic" then "7h15"
+      when "Legendary" then "7h00"
+      when "Mythic" then "6h45"
+      when "Exalted" then "6h30"
+      when "Exotic" then "6h15"
+      when "Transcendent" then "6h00"
+      when "Unique" then "5h45"
+      else "8h00"
+      end
     end
 
-    def calculate_in_game_minutes(rarity)
-      max_energy = Constants::MAX_ENERGY[rarity]
-      return nil if max_energy.nil?
-      max_energy * 60
+    def calculate_roi(badge, recharge_cost, bft_value_per_max_charge)
+      return nil if badge.nil? || recharge_cost.nil? || bft_value_per_max_charge.nil? || bft_value_per_max_charge.zero?
+
+      total_cost = badge.floorPrice.to_f + recharge_cost.to_f
+      return nil if total_cost.zero?
+
+      # ROI = Temps de retour sur investissement en nombre de recharges
+      (total_cost / bft_value_per_max_charge).round(2)
     end
 
-    def calculate_sbft_per_max_recharge(rarity)
-      bft_per_minute = Constants::BFT_PER_MINUTE[rarity]
-      max_energy = Constants::MAX_ENERGY[rarity]
-      return nil if bft_per_minute.nil? || max_energy.nil?
-      (bft_per_minute * max_energy * 8).round(0)
-    end
-
-    def calculate_sbft_value(rarity)
-      sbft = calculate_sbft_per_max_recharge(rarity)
-      return nil if sbft.nil?
-      (sbft * Constants::BFT_TO_USD).round(2)
-    end
-
-    def calculate_nb_charges_roi(badge, recharge_cost)
-      return nil if badge.floorPrice.nil? || recharge_cost.nil? || recharge_cost[:total_usd].zero?
-
-      total_cost = calculate_total_cost(badge, recharge_cost)
-      value_bft_max_charge = calculate_sbft_value_per_max_charge(badge.rarity.name)
-      recharge_price = recharge_cost[:total_usd]
-
-      return nil if value_bft_max_charge.nil? || value_bft_max_charge.zero?
-
-      (total_cost + (((total_cost / value_bft_max_charge) - 1) * recharge_price)) / value_bft_max_charge
-    end
-
-    def get_badge_name(rarity)
-      Constants::BADGE_NAMES[rarity] || rarity
-    end
-
-    def calculate_in_game_time(rarity)
-      max_energy = Constants::MAX_ENERGY[rarity]
-      "%02dh00" % max_energy
+    def calculate_bft_value_per_max_charge(badge)
+      bft_per_max = calculate_bft_per_max_charge(badge)
+      return nil if bft_per_max.nil?
+      (bft_per_max * BFT_PRICE).round(2)
     end
 
     def format_currency(amount)
       return nil if amount.nil?
-      amount
+      return nil if amount == "???"
+      "$#{'%.2f' % amount}"
     end
   end
 end
