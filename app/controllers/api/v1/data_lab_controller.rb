@@ -22,4 +22,9 @@ class Api::V1::DataLabController < ApplicationController
     calculator = DataLab::BadgesMetricsCalculator.new(current_user)
     render json: calculator.calculate
   end
+
+  def craft_metrics
+    calculator = DataLab::CraftMetricsCalculator.new(current_user)
+    render json: calculator.calculate
+  end
 end
