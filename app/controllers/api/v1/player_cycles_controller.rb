@@ -5,16 +5,25 @@ class Api::V1::PlayerCyclesController < Api::V1::BaseController
   def index
     @cycles = current_user.player_cycles
     render json: {
-      cycles: @cycles.map { |cycle| cycle_json(cycle) }
+      cycles: @cycles.map { |cycle| cycle_json(cycle) },
+      total_count: @cycles.count
     }
   end
 
   def show
-    render json: {
-      cycle: cycle_json(@cycle)
-    }
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Cycle not found or not accessible" }, status: :not_found
+    if @cycle
+      render json: {
+        cycle: cycle_json(@cycle),
+        metrics: cycle_metrics(@cycle)
+      }
+    else
+      render json: {
+        error: "Cycle not found",
+        message: "No cycle found with ID #{params[:id]} for current user",
+        user_id: current_user.id,
+        requested_cycle_id: params[:id]
+      }, status: :not_found
+    end
   end
 
   def create
@@ -45,7 +54,7 @@ class Api::V1::PlayerCyclesController < Api::V1::BaseController
   private
 
   def set_cycle
-    @cycle = current_user.player_cycles.find(params[:id])
+    @cycle = current_user.player_cycles.find_by(id: params[:id])
   end
 
   def cycle_params
@@ -77,17 +86,20 @@ class Api::V1::PlayerCyclesController < Api::V1::BaseController
 
   def cycle_metrics(cycle)
     matches = cycle.user.matches.where(created_at: cycle.startDate..cycle.endDate)
+    total_matches = matches.count
+    total_profit = matches.sum(:profit)
+    total_energy = matches.sum(:energyUsed)
 
     {
       matches_stats: {
-        total_matches: matches.count,
-        total_profit: matches.sum(:profit),
-        average_profit: matches.average(:profit)&.round(2) || 0,
-        total_energy_spent: matches.sum(:energyUsed)
+        total_matches: total_matches,
+        total_profit: total_profit,
+        average_profit: total_matches > 0 ? (total_profit / total_matches).round(2) : 0,
+        total_energy_spent: total_energy
       },
       efficiency: {
-        profit_per_energy: matches.sum(:energyUsed) > 0 ? (matches.sum(:profit) / matches.sum(:energyUsed)).round(2) : 0,
-        matches_per_day: matches.group_by_day(:created_at).count.values.max || 0
+        profit_per_energy: total_energy > 0 ? (total_profit / total_energy).round(2) : 0,
+        matches_per_day: total_matches > 0 ? (total_matches / ((cycle.endDate - cycle.startDate).to_i + 1).to_f).round(2) : 0
       },
       currency_earned: {
         total_bft: matches.sum(:totalToken),

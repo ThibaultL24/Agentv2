@@ -35,7 +35,7 @@ Rails.application.routes.draw do
       resources :item_crafting
       resources :item_recharge
       resources :matches
-      resources :player_cycles
+      resources :player_cycles, only: [:index, :show]
       resources :nfts, only: [:index, :show, :update, :destroy] do
         collection do
           post 'create'

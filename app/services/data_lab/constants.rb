@@ -75,7 +75,7 @@ module DataLab
         when "Exotic" then "6h15"
         when "Transcendent" then "6h00"
         when "Unique" then "5h45"
-        else "8h00"
+        else "5h30"
         end
       end
 
