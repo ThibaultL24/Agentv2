@@ -3,6 +3,8 @@ module DataLab
     include Constants::Utils
     include Constants::Calculator
 
+    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Exalted", "Exotic", "Transcendent", "Unique"]
+
     def initialize(user, badge_rarity = "Common")
       @user = user
       @badge_rarity = badge_rarity || "Common"
@@ -79,15 +81,33 @@ module DataLab
     end
 
     def calculate_bft_per_minute(rarity)
-      Constants::Calculator.calculate_bft_per_minute(rarity)
+      return 0 unless RARITY_ORDER.include?(rarity)
+
+      rarity_index = RARITY_ORDER.index(rarity)
+      base_value = 15 # Valeur de base pour Common
+
+      # Formule : base_value * (multiplier ^ rarity_index)
+      multiplier = rarity_index <= 5 ? 2.5 : 2.0
+      (base_value * (multiplier ** rarity_index)).round(0)
     end
 
     def calculate_max_energy(rarity)
-      Constants::Calculator.calculate_max_energy(rarity)
+      return 0 unless RARITY_ORDER.include?(rarity)
+      RARITY_ORDER.index(rarity) + 1
     end
 
     def calculate_recharge_cost(rarity)
-      Constants::Calculator.calculate_recharge_cost(rarity)
+      return 0 unless RARITY_ORDER.include?(rarity)
+
+      rarity_index = RARITY_ORDER.index(rarity)
+      base_flex = 500
+      base_sm = 150
+
+      flex_cost = (base_flex * (1.8 ** rarity_index)).round(0)
+      sm_cost = rarity_index <= 5 ? (base_sm * (1.7 ** rarity_index)).round(0) : nil
+
+      return nil if sm_cost.nil?
+      (flex_cost * Constants::FLEX_TO_USD + sm_cost * Constants::BFT_TO_USD).round(2)
     end
 
     def calculate_bft_value_per_max_charge(rarity)
