@@ -88,6 +88,13 @@ module DataLab
       Item.includes(:type, :rarity, :item_farming, :item_recharge, :item_crafting, :nfts)
           .joins(:rarity)
           .where(types: { name: 'Badge' })
+          .map do |badge|
+            # Mettre à jour le supply avec la valeur de BADGE_BASE_METRICS
+            if BADGE_BASE_METRICS[badge.rarity.name]
+              badge.supply = BADGE_BASE_METRICS[badge.rarity.name][:supply]
+            end
+            badge
+          end
           .sort_by { |badge| Constants::RARITY_ORDER.index(badge.rarity.name) }
     end
 
@@ -100,19 +107,27 @@ module DataLab
         max_energy = calculate_max_energy(badge)
         bft_value_per_max_charge = calculate_bft_value_per_max_charge(badge)
 
+        # Calculate efficiency and ratio
+        efficiency = badge.item_farming&.efficiency || "N/A"
+        ratio = calculate_ratio(badge)
+        cost_per_hour = calculate_cost_per_hour(recharge_cost&.[](:total_usd), calculate_recharge_time(badge))
+
         {
           "1. rarity": rarity,
           "2. item": Constants::BADGE_NAMES[rarity] || "Unknown",
           "3. supply": badge.supply || 0,
           "4. floor_price": format_currency(badge.floorPrice),
-          "5. max_energy": max_energy,
-          "6. time_to_charge": calculate_recharge_time(badge),
-          "7. in_game_time": calculate_in_game_time(badge),
-          "8. recharge_cost": format_currency(recharge_cost&.[](:total_usd)),
-          "9. bft_per_minute": bft_per_minute,
-          "10. bft_per_max_charge": calculate_bft_per_max_charge(badge),
-          "11. bft_value_per_max_charge": format_currency(bft_value_per_max_charge),
-          "12. roi": calculate_roi(badge, recharge_cost&.[](:total_usd), bft_value_per_max_charge)
+          "5. efficiency": efficiency,
+          "6. ratio": ratio,
+          "7. max_energy": max_energy,
+          "8. time_to_charge": calculate_recharge_time(badge),
+          "9. in_game_time": calculate_in_game_time(badge),
+          "10. max_charge_cost": format_currency(recharge_cost&.[](:total_usd)),
+          "11. cost_per_hour": format_currency(cost_per_hour),
+          "12. bft_per_minute": bft_per_minute,
+          "13. bft_per_max_charge": calculate_bft_per_max_charge(badge),
+          "14. bft_value_per_max_charge": format_currency(bft_value_per_max_charge),
+          "15. roi": calculate_roi(badge, recharge_cost&.[](:total_usd), bft_value_per_max_charge)
         }
       end.compact
     end
@@ -272,6 +287,30 @@ module DataLab
       bft_per_max = calculate_bft_per_max_charge(badge)
       return nil if bft_per_max.nil?
       (bft_per_max * BFT_PRICE).round(2)
+    end
+
+    def calculate_ratio(badge)
+      return "N/A" unless badge&.rarity&.name
+      case badge.rarity.name
+      when "Common" then 1
+      when "Uncommon" then 2
+      when "Rare" then 3
+      when "Epic" then 4
+      when "Legendary" then 5
+      when "Mythic" then 6
+      when "Exalted" then 7
+      when "Exotic" then 8
+      when "Transcendent" then 9
+      when "Unique" then 10
+      else "N/A"
+      end
+    end
+
+    def calculate_cost_per_hour(recharge_cost, recharge_time)
+      return nil if recharge_cost.nil? || recharge_time.nil?
+      hours = convert_time_to_minutes(recharge_time) / 60.0
+      return nil if hours.zero?
+      (recharge_cost / hours).round(2)
     end
 
     def format_currency(amount)

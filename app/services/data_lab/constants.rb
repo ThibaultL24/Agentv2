@@ -13,6 +13,20 @@ module DataLab
     MINUTES_PER_MATCH = 10
     HOURS_PER_ENERGY = 1
 
+    # Efficacité par rareté
+    BADGE_EFFICIENCY = {
+      "Common" => 0.1,
+      "Uncommon" => 0.205,
+      "Rare" => 0.420,
+      "Epic" => 1.292,
+      "Legendary" => 3.974,
+      "Mythic" => 12.219,
+      "Exalted" => 375.74,
+      "Exotic" => 154.054,
+      "Transcendent" => 631.620,
+      "Unique" => 2589.642
+    }
+
     # Noms des badges (règles de jeu fixes)
     BADGE_NAMES = {
       "Common" => "Rookie",
