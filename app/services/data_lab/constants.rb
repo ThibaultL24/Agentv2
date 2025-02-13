@@ -8,6 +8,14 @@ module DataLab
     # Ordre des raretés (fixe)
     RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Exalted", "Exotic", "Transcendent", "Unique"]
 
+    # Prix des slots en FLEX
+    SLOT_PRICES = {
+      1 => 7000,   # Premier slot
+      2 => 13000,  # Deuxième slot
+      3 => 20000,  # Troisième slot
+      4 => 26000   # Quatrième slot
+    }.freeze
+
     # Règles de jeu fixes
     MATCHES_PER_CHARGE = 18
     MINUTES_PER_MATCH = 10
@@ -61,19 +69,7 @@ module DataLab
 
       def calculate_max_energy(rarity)
         return 1 unless rarity && RARITY_ORDER.include?(rarity)
-        case rarity
-        when "Common" then 1
-        when "Uncommon" then 2
-        when "Rare" then 3
-        when "Epic" then 4
-        when "Legendary" then 5
-        when "Mythic" then 6
-        when "Exalted" then 7
-        when "Exotic" then 8
-        when "Transcendent" then 9
-        when "Unique" then 10
-        else 1
-        end
+        RARITY_ORDER.index(rarity) + 1
       end
 
       def calculate_recharge_time(rarity)
@@ -94,34 +90,18 @@ module DataLab
       end
 
       def calculate_bft_per_minute(rarity)
-        case rarity
-        when "Common" then 15
-        when "Uncommon" then 50
-        when "Rare" then 120
-        when "Epic" then 350
-        when "Legendary" then 1000
-        when "Mythic" then 2500
-        when "Exalted" then 5000
-        when "Exotic" then 10000
-        when "Transcendent" then 25000
-        when "Unique" then 50000
-        else 0
-        end
+        return 0 unless RARITY_ORDER.include?(rarity)
+        rarity_index = RARITY_ORDER.index(rarity)
+        base_value = 15 # Valeur de base pour Common
+        multiplier = rarity_index <= 5 ? 2.5 : 2.0
+        (base_value * (multiplier ** rarity_index)).round(0)
       end
 
       def calculate_recharge_cost(rarity)
-        flex_costs = {
-          "Common" => 500,
-          "Uncommon" => 1400,
-          "Rare" => 2520,
-          "Epic" => 4800,
-          "Legendary" => 12000,
-          "Mythic" => 21000,
-          "Exalted" => 9800,
-          "Exotic" => 11200,
-          "Transcendent" => 12600,
-          "Unique" => 14000
-        }
+        return nil unless RARITY_ORDER.include?(rarity)
+        rarity_index = RARITY_ORDER.index(rarity)
+        base_flex = 500
+        base_sm = 150
 
         sm_costs = {
           "Common" => 150,
@@ -148,24 +128,8 @@ module DataLab
         }
       end
 
-      def calculate_bft_value_per_max_charge(rarity)
-        bft_per_minute = calculate_bft_per_minute(rarity)
-        max_energy = calculate_max_energy(rarity)
-        return nil if bft_per_minute.nil? || max_energy.nil?
-
-        minutes_per_energy = 60 # 1 heure par énergie
-        total_bft = bft_per_minute * max_energy * minutes_per_energy
-        (total_bft * BFT_TO_USD).round(2)
-      end
-
-      def calculate_roi(badge, recharge_cost, bft_value_per_max_charge)
-        return nil if badge.nil? || recharge_cost.nil? || bft_value_per_max_charge.nil? || bft_value_per_max_charge.zero?
-
-        total_cost = badge.floorPrice.to_f + recharge_cost.to_f
-        return nil if total_cost.zero?
-
-        numerator = total_cost + (((total_cost/bft_value_per_max_charge) - 1) * recharge_cost)
-        (numerator / bft_value_per_max_charge).round(2)
+      def calculate_slot_cost(slot_id)
+        SLOT_PRICES[slot_id] || 0
       end
 
       def calculate_slot_roi(badge, slots_count, slot_total_cost, recharge_cost, bft_value_per_max_charge)

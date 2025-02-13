@@ -17,14 +17,25 @@ module DataLab
       # Calculer le total des coûts de tous les slots
       total_slots_cost = slots.sum(:unlockPrice)
       total_flex = slots.sum(:unlockCurrencyNumber)
-      total_bonus_bft = calculate_total_bonus_bft(@user.user_slots.count)
+      nb_slots = @user.user_slots.count
+
+      # Calculer les ROI avec la formule complète
+      bft_value_per_charge = calculate_bft_value_per_charge(@badge_rarity)
+      recharge_cost = calculate_recharge_cost(@badge_rarity)
+
+      # Calcul des ROI avec les multiplicateurs
+      base_roi = calculate_total_slots_roi(total_slots_cost, nb_slots, recharge_cost&.[](:total_usd), bft_value_per_charge)
 
       {
         slots_cost: slots_costs,
         unlocked_slots: {
           "1. total_flex": total_flex,
           "2. total_cost": format_currency(total_slots_cost),
-          "3. total_bonus_bft": total_bonus_bft
+          "3. total_bonus_bft": calculate_total_bonus_bft_percent(nb_slots),
+          "4. nb_tokens_roi": base_roi,
+          "5. nb_charges_roi_1.0": base_roi,
+          "6. nb_charges_roi_2.0": (base_roi / 2.0).round(0),
+          "7. nb_charges_roi_3.0": (base_roi / 3.0).round(0)
         }
       }
     end
@@ -36,15 +47,25 @@ module DataLab
         bft_per_minute = calculate_bft_per_minute(@badge_rarity)
         max_energy = calculate_max_energy(@badge_rarity)
 
-        bonus_bft = calculate_bonus_bft_per_slot(slot.id, bft_per_minute)
-        total_bft = calculate_total_bft_per_charge(slot.id, bft_per_minute, max_energy)
+        # Calcul du bonus BFT en pourcentage selon le slot
+        bonus_percentage = case slot.id
+          when 1 then 0    # 0%
+          when 2 then 0.5  # 0.5%
+          when 3 then 1.5  # 1.5%
+          when 4 then 3.0  # 3%
+          when 5 then 5.0  # 5%
+          else 0
+        end
+
+        bonus_bft = (bft_per_minute * (bonus_percentage / 100.0)).round(2)
 
         {
           "1. slot": slot.id,
           "2. nb_flex": slot.unlockCurrencyNumber,
           "3. flex_cost": format_currency(slot.unlockPrice),
-          "4. bonus_bft": bonus_bft,
-          "5. total_bft": total_bft
+          "4. bonus_bft": bonus_percentage,
+          "5. normal_part_bft": 14,
+          "6. bonus_part_bft": calculate_bonus_part_bft(slot.id)
         }
       end
     end
@@ -97,23 +118,50 @@ module DataLab
     end
 
     def calculate_recharge_cost(rarity)
-      return 0 unless RARITY_ORDER.include?(rarity)
+      return nil unless RARITY_ORDER.include?(rarity)
 
-      rarity_index = RARITY_ORDER.index(rarity)
-      base_flex = 500
-      base_sm = 150
+      flex_costs = {
+        "Common" => 500,
+        "Uncommon" => 1400,
+        "Rare" => 2520,
+        "Epic" => 4800,
+        "Legendary" => 12000,
+        "Mythic" => 21000,
+        "Exalted" => 9800,
+        "Exotic" => 11200,
+        "Transcendent" => 12600,
+        "Unique" => 14000
+      }
 
-      flex_cost = (base_flex * (1.8 ** rarity_index)).round(0)
-      sm_cost = rarity_index <= 5 ? (base_sm * (1.7 ** rarity_index)).round(0) : nil
+      sm_costs = {
+        "Common" => 150,
+        "Uncommon" => 350,
+        "Rare" => 1023,
+        "Epic" => 1980,
+        "Legendary" => 4065,
+        "Mythic" => 8136,
+        "Exalted" => nil,
+        "Exotic" => nil,
+        "Transcendent" => nil,
+        "Unique" => nil
+      }
 
-      return nil if sm_cost.nil?
-      (flex_cost * Constants::FLEX_TO_USD + sm_cost * Constants::BFT_TO_USD).round(2)
+      flex_cost = flex_costs[rarity]
+      sm_cost = sm_costs[rarity]
+
+      return nil if flex_cost.nil? || sm_cost.nil?
+
+      {
+        flex: flex_cost,
+        sm: sm_cost,
+        total_usd: (flex_cost * Constants::FLEX_TO_USD + sm_cost * Constants::BFT_TO_USD).round(2)
+      }
     end
 
-    def calculate_bft_value_per_max_charge(rarity)
+    def calculate_bft_value_per_charge(rarity)
       bft_per_minute = calculate_bft_per_minute(rarity)
       max_energy = calculate_max_energy(rarity)
-      return nil if bft_per_minute.nil? || max_energy.nil?
+      return 0 if bft_per_minute.nil? || max_energy.nil?
 
       total_bft = bft_per_minute * max_energy * 60
       (total_bft * Constants::BFT_TO_USD).round(2)
@@ -139,37 +187,69 @@ module DataLab
       1 + (nb_slots * 0.2)
     end
 
-    def calculate_total_slots_roi(slot_total_cost, slots_count, recharge_cost, bft_value_per_max_charge)
-      # (Total slot cost + (Total cost*Slots) + ((((Total cost*Slots)/$BFT value 1 recharge)-(1*Slots))*prix1recharge)) / ($BFTvalue1recharge*Slots)
-      slots = slots_count + 1
-      total_cost = slot_total_cost + recharge_cost
+    def calculate_total_slots_roi(slot_total_cost, slots_count, recharge_cost, bft_value_per_charge)
+      return 0 if slot_total_cost.nil? || recharge_cost.nil? || bft_value_per_charge.nil? || bft_value_per_charge.zero?
 
-      numerator = slot_total_cost +
-                 (total_cost * slots) +
-                 ((((total_cost * slots)/bft_value_per_max_charge) - (1 * slots)) * recharge_cost)
+      # Calcul du ROI selon la formule :
+      # (Total slot cost + (Total cost * Slots) + ((((Total cost * Slots) / $BFT value 1 recharge) - (1 * Slots)) * prix 1 recharge)) / ($BFT value 1 recharge * Slots)
 
-      denominator = bft_value_per_max_charge * slots
+      # Variables de la formule
+      total_cost = slot_total_cost + recharge_cost  # Total cost = (achat badge + recharge)
+      slots = slots_count + 1                       # Slots = Nb Slot(s) unlocked + 1
 
-      (numerator / denominator).round(2)
+      # Calcul par étapes
+      step1 = total_cost * slots                    # (Total cost * Slots)
+      step2 = (step1 / bft_value_per_charge) - slots # ((Total cost * Slots) / $BFT value 1 recharge) - (1 * Slots)
+      step3 = step2 * recharge_cost                 # ... * prix 1 recharge
+
+      numerator = slot_total_cost + step1 + step3   # Total slot cost + (Total cost * Slots) + ...
+      denominator = bft_value_per_charge * slots    # ($BFT value 1 recharge * Slots)
+
+      (numerator / denominator).round(0)
     end
 
-    def calculate_slot_roi(slot_cost, slot_id, recharge_cost, bft_value_per_max_charge)
-      return 0 if slot_cost.nil? || recharge_cost.nil? || bft_value_per_max_charge.nil? || bft_value_per_max_charge.zero?
-
-      slots = slot_id + 1
-      total_cost = slot_cost + recharge_cost
-
-      numerator = slot_cost +
-                 (total_cost * slots) +
-                 ((((total_cost * slots)/bft_value_per_max_charge) - (1 * slots)) * recharge_cost)
-
-      denominator = bft_value_per_max_charge * slots
-
-      (numerator / denominator).round(2)
+    def calculate_total_bonus_bft_percent(nb_slots)
+      # D'après le CSV, les bonus sont progressifs
+      case nb_slots
+      when 1 then 1.0   # 1%
+      when 2 then 4.5   # 4.5%
+      when 3 then 12.0  # 12%
+      when 4 then 25.0  # 25%
+      else 0
+      end
     end
 
     def format_currency(amount)
       "$#{'%.2f' % amount}"
+    end
+
+    def calculate_bonus_part_bft(slot_id)
+      case slot_id
+      when 1 then 0
+      when 2 then 1
+      when 3 then 2
+      when 4 then 4
+      when 5 then 6
+      else 0
+      end
+    end
+
+    def calculate_nb_tokens_roi(total_cost)
+      return 0 if total_cost.zero?
+      (total_cost / 0.01).round(0)  # Assuming 0.01 is the token value
+    end
+
+    def calculate_charges_roi(total_cost, multiplier)
+      return 0 if total_cost.zero?
+      base_charges = case multiplier
+        when 1.0 then [5, 10, 19, 29]
+        when 2.0 then [3, 5, 10, 15]
+        when 3.0 then [2, 4, 7, 10]
+        else []
+      end
+
+      unlocked_slots = @user.user_slots.count
+      base_charges[unlocked_slots - 1] || 0
     end
   end
 end
